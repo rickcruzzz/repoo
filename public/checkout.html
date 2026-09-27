@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f0f5fc">
+  <meta name="description" content="Organize seu pedido de comunicação visual: itens, endereço e forma de pagamento preferida.">
+  <title>Checkout | Comunicação Visual Teste</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/cv-mark.svg?v=3">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/logo.css?v=3">
+  <link rel="stylesheet" href="/theme-blue.css">
+  <link rel="stylesheet" href="/commerce.css?v=3">
+  <script src="/catalog.js?v=2" defer></script>
+  <script src="/checkout.js?v=4" defer></script>
+</head>
+<body class="checkout-page">
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+  <header class="checkout-header">
+    <div class="container checkout-header-inner">
+      <a class="brand" href="/" aria-label="Comunicação Visual Teste, voltar à loja"><span class="brand-symbol" aria-hidden="true"><img src="/assets/cv-mark.svg?v=3" alt=""></span><span class="brand-name">comunicação<br><strong>visual teste.</strong></span></a>
+      <span class="checkout-header-title">Seu projeto, passo a passo</span>
+      <a class="checkout-back-link" href="/#solucoes">← Voltar à loja</a>
+    </div>
+  </header>
+
+  <main id="conteudo" class="checkout-shell container">
+    <div class="checkout-intro"><span class="eyebrow"><span class="dot"></span> Pedido sob medida</span><h1>Vamos organizar sua ideia.</h1><p>Revise as soluções, informe o endereço e escolha como prefere pagar quando o orçamento estiver pronto.</p></div>
+    <ol class="checkout-progress" aria-label="Etapas do pedido">
+      <li class="active" data-progress="0" aria-current="step"><span>01</span><strong>Carrinho</strong></li>
+      <li data-progress="1"><span>02</span><strong>Endereço</strong></li>
+      <li data-progress="2"><span>03</span><strong>Pagamento</strong></li>
+      <li data-progress="3"><span>04</span><strong>Revisão</strong></li>
+    </ol>
+
+    <div class="checkout-layout">
+      <div class="checkout-main">
+        <section class="checkout-card checkout-step" data-step="0" aria-labelledby="cartTitle">
+          <div class="checkout-card-head"><span class="step-kicker">Etapa 01 / 04</span><h2 id="cartTitle">Seu carrinho</h2><p>Confira os serviços e ajuste as quantidades. As medidas e materiais serão definidos com você.</p></div>
+          <div id="checkoutCart" class="checkout-cart-list" aria-live="polite"></div>
+          <div class="checkout-notice"><span aria-hidden="true">i</span><p>O valor final depende das medidas, materiais, acabamentos e local de entrega ou instalação. Nenhuma cobrança será feita agora.</p></div>
+          <label class="checkout-field project-field" for="projectDetails"><span>Conte mais sobre seu projeto <small>opcional</small></span><textarea id="projectDetails" rows="4" maxlength="1200" placeholder="Medidas aproximadas, materiais, prazo desejado e detalhes da instalação..."></textarea></label>
+          <div class="checkout-actions"><a class="checkout-subtle-link" href="/#solucoes">← Adicionar mais soluções</a><button type="button" class="button button-dark" id="toAddress">Continuar para endereço <span aria-hidden="true">→</span></button></div>
+        </section>
+
+        <section class="checkout-card checkout-step" data-step="1" aria-labelledby="addressTitle" hidden>
+          <div class="checkout-card-head"><span class="step-kicker">Etapa 02 / 04</span><h2 id="addressTitle">Endereço do projeto</h2><p>Vamos usar estes dados para avaliar entrega e instalação. Você pode preencher o endereço manualmente.</p></div>
+          <form id="addressForm" novalidate>
+            <div class="checkout-fields two-col"><label class="checkout-field"><span>Nome completo</span><input id="customerName" name="name" autocomplete="name" required maxlength="100" placeholder="Seu nome"></label><label class="checkout-field"><span>E-mail</span><input id="customerEmail" name="email" type="email" autocomplete="email" required maxlength="160" placeholder="voce@exemplo.com"></label></div>
+            <div class="checkout-fields two-col"><label class="checkout-field"><span>Celular com DDD</span><input id="customerPhone" name="phone" autocomplete="tel-national" type="tel" inputmode="tel" required maxlength="16" placeholder="(11) 99999-9999"></label><div class="checkout-field"><label for="addressCep">CEP</label><div class="cep-row"><input id="addressCep" name="cep" autocomplete="postal-code" inputmode="numeric" required maxlength="9" placeholder="00000-000"><button type="button" id="cepLookup">Buscar CEP</button></div><small id="cepStatus" role="status" aria-live="polite"></small></div></div>
+            <div class="checkout-fields street-grid"><label class="checkout-field"><span>Rua ou avenida</span><input id="addressStreet" name="street" autocomplete="address-line1" required maxlength="120" placeholder="Nome da rua"></label><label class="checkout-field"><span>Número</span><input id="addressNumber" name="number" required maxlength="20" placeholder="Nº"></label></div>
+            <div class="checkout-fields two-col"><label class="checkout-field"><span>Complemento <small>opcional</small></span><input id="addressExtra" name="extra" autocomplete="address-line2" maxlength="80" placeholder="Sala, bloco, referência"></label><label class="checkout-field"><span>Bairro</span><input id="addressDistrict" name="district" required maxlength="80" placeholder="Seu bairro"></label></div>
+            <div class="checkout-fields city-grid"><label class="checkout-field"><span>Cidade</span><input id="addressCity" name="city" autocomplete="address-level2" required maxlength="80" placeholder="Cidade"></label><label class="checkout-field"><span>UF</span><input id="addressState" name="state" autocomplete="address-level1" required maxlength="2" minlength="2" placeholder="SP"></label></div>
+          </form>
+          <div class="checkout-actions"><button type="button" class="checkout-subtle-link" data-back="0">← Voltar ao carrinho</button><button type="button" class="button button-dark" id="toPayment">Continuar para pagamento <span aria-hidden="true">→</span></button></div>
+        </section>
+
+        <section class="checkout-card checkout-step" data-step="2" aria-labelledby="paymentTitle" hidden>
+          <div class="checkout-card-head"><span class="step-kicker">Etapa 03 / 04</span><h2 id="paymentTitle">Como prefere pagar?</h2><p>Escolha uma preferência. O pagamento só será solicitado após você aprovar o orçamento final.</p></div>
+          <fieldset class="payment-options"><legend class="visually-hidden">Forma de pagamento preferida</legend>
+            <label class="payment-option active"><input type="radio" name="paymentMethod" value="pix" checked><span class="payment-monogram">PIX</span><span class="payment-option-copy"><strong>Pix</strong><small>Pagamento instantâneo após aprovação</small></span><span class="payment-check" aria-hidden="true"></span></label>
+            <label class="payment-option"><input type="radio" name="paymentMethod" value="card"><span class="payment-monogram">▭</span><span class="payment-option-copy"><strong>Cartão de crédito</strong><small>Parcelas e condições no orçamento</small></span><span class="payment-check" aria-hidden="true"></span></label>
+            <label class="payment-option"><input type="radio" name="paymentMethod" value="boleto"><span class="payment-monogram">▥</span><span class="payment-option-copy"><strong>Boleto bancário</strong><small>Vencimento definido após aprovação</small></span><span class="payment-check" aria-hidden="true"></span></label>
+          </fieldset>
+          <div id="paymentDetail" class="payment-detail" aria-live="polite"></div>
+          <div class="checkout-actions"><button type="button" class="checkout-subtle-link" data-back="1">← Voltar ao endereço</button><button type="button" class="button button-dark" id="toReview">Revisar pedido <span aria-hidden="true">→</span></button></div>
+        </section>
+
+        <section class="checkout-card checkout-step" data-step="3" aria-labelledby="reviewTitle" hidden>
+          <div class="checkout-card-head"><span class="step-kicker">Etapa 04 / 04</span><h2 id="reviewTitle">Revise seu pedido</h2><p>Confirme seus dados antes de enviar a solicitação. O pagamento não acontece nesta etapa.</p></div>
+          <div id="reviewContent" class="review-content"></div>
+          <label class="review-consent"><input type="checkbox" id="reviewConsent"><span>Confirmo que os dados estão corretos e aceito receber contato sobre este orçamento.</span></label>
+          <div class="checkout-actions"><button type="button" class="checkout-subtle-link" data-back="2">← Voltar ao pagamento</button><button type="button" class="button button-dark" id="finishCheckout" disabled>Enviar pedido para análise <span aria-hidden="true">→</span></button></div>
+          <p id="finishStatus" class="finish-status" role="status" aria-live="polite">Aguardando configuração do canal de atendimento.</p>
+        </section>
+      </div>
+
+      <aside class="checkout-summary" aria-labelledby="summaryTitle"><div class="summary-topline"></div><div class="summary-inner"><span class="eyebrow">Seu projeto</span><h2 id="summaryTitle">Resumo do pedido</h2><div id="summaryItems" class="summary-items"></div><div class="summary-breakdown"><div><span>Itens</span><strong id="summaryQty">0</strong></div><div><span>Serviços</span><strong>Sob orçamento</strong></div><div><span>Entrega ou instalação</span><strong>A definir</strong></div></div><div class="summary-total"><span>Valor final</span><strong>Após análise</strong></div><p>Você receberá os valores antes de escolher se deseja pagar.</p></div></aside>
+    </div>
+  </main>
+  <footer class="checkout-footer"><div class="container"><span>© <span id="year"></span> Comunicação Visual Teste</span><span>Pedido sob medida, com aprovação antes do pagamento.</span><a href="/">Voltar à loja ↑</a></div></footer>
+</body>
+</html>

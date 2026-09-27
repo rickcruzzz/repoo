@@ -1,0 +1,42 @@
+.brand-symbol {
+  display: block;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  line-height: 1;
+}
+
+.brand-symbol img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.footer-brand .brand-symbol img {
+  filter: brightness(0) invert(1);
+}
+
+.hero-note-mark {
+  display: block;
+  width: 28px;
+  height: 3px;
+  flex: 0 0 28px;
+  background: var(--orange);
+}
+
+@media (max-width: 700px) {
+  .brand-symbol {
+    width: 37px;
+    height: 37px;
+    flex-basis: 37px;
+  }
+}
+
+@media (max-width: 390px) {
+  .brand-symbol {
+    width: 33px;
+    height: 33px;
+    flex-basis: 33px;
+  }
+}

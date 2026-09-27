@@ -1,0 +1,5 @@
+.env
+node_modules/
+reference.html
+.agents/
+audit/

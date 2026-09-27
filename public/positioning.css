@@ -1,0 +1,16 @@
+.faq-section { background:#fff; border-top:1px solid var(--line); }
+.faq-layout { display:grid; grid-template-columns:minmax(250px,.72fr) minmax(0,1.28fr); gap:clamp(35px,8vw,120px); align-items:start; }
+.faq-intro h2 { font-size:clamp(33px,3.4vw,49px); letter-spacing:-.06em; line-height:1.13; margin:13px 0 16px; }
+.faq-intro p { max-width:370px; font-size:13px; line-height:1.8; color:var(--muted); margin:0; }
+.faq-list { border-top:1px solid var(--line); }
+.faq-list details { border-bottom:1px solid var(--line); }
+.faq-list summary { display:flex; align-items:center; justify-content:space-between; gap:20px; cursor:pointer; list-style:none; padding:21px 0; font-weight:700; font-size:14px; line-height:1.5; }
+.faq-list summary::-webkit-details-marker { display:none; }
+.faq-list summary:after { content:'+'; color:#205eb2; font-size:24px; font-weight:400; line-height:1; }
+.faq-list details[open] summary:after { content:'−'; }
+.faq-list p { color:#526980; font-size:12px; line-height:1.8; margin:0 25px 22px 0; max-width:680px; }
+@media(max-width:700px) {
+  .faq-layout { display:block; }
+  .faq-intro { margin-bottom:28px; }
+  .faq-list summary { font-size:12px; padding:18px 0; }
+}
