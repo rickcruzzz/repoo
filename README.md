@@ -44,3 +44,4 @@ As imagens Pexels são ilustrações dos serviços. A aplicação não vende có
 
 Esta é uma vitrine com solicitação de orçamento. Preços, pagamento efetivo e gestão de estoque dependem da operação real e não são simulados.
 # repositório
+# prompt-ready
