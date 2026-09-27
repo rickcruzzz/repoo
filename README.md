@@ -43,3 +43,4 @@ As imagens Pexels são ilustrações dos serviços. A aplicação não vende có
 - `.env.example`: variáveis de ambiente disponíveis.
 
 Esta é uma vitrine com solicitação de orçamento. Preços, pagamento efetivo e gestão de estoque dependem da operação real e não são simulados.
+# repositório
