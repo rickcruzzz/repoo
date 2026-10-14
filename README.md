@@ -59,3 +59,31 @@ O endereço mantém a consulta ViaCEP e permite preenchimento manual em caso de 
 - `server.js`: arquivos estáticos, configuração, fotos e consulta de preços.
 
 Os arquivos CSS, as imagens, as fontes e o logotipo foram preservados.
+
+## Preparação das integrações
+
+Foi definido Mercado Pago para compra online sem cadastro. A preparação das variáveis de ambiente não implementa o backend de pedidos, Storage ou pagamentos. Os preços, o domínio e a implementação restante continuam pendentes; preencher o `.env` não ativa a compra.
+
+O `.env` local recebeu os nomes de configuração da aplicação, sem substituir seus valores anteriores. As credenciais existentes do Supabase foram reaproveitadas nos nomes padronizados. O modelo `.env.example` contém somente nomes, comentários e valores de configuração, sem credenciais.
+
+| Variável | Como preencher |
+| --- | --- |
+| `SUPABASE_URL` | URL do projeto Supabase; reaproveitada da configuração local existente. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chave privada do backend; reaproveitada da configuração local existente. |
+| `SUPABASE_PUBLISHABLE_KEY` | Chave pública preferida do Supabase; reaproveitada quando disponível. |
+| `SUPABASE_ANON_KEY` | Chave pública legada, opcional para compatibilidade; reaproveitada quando disponível. |
+| `MERCADO_PAGO_ACCESS_TOKEN` | Access Token da aplicação em Suas integrações. Usar o token de teste durante desenvolvimento. |
+| `MERCADO_PAGO_PUBLIC_KEY` | Public Key da mesma aplicação e ambiente. Opcional no redirecionamento direto do Checkout Pro. |
+| `MERCADO_PAGO_WEBHOOK_SECRET` | Chave de assinatura de Webhooks > Configurar notificação na aplicação do Mercado Pago. |
+| `MERCADO_PAGO_WEBHOOK_URL` | URL HTTPS pública do endpoint de notificações; caminho previsto `/api/webhooks/mercado-pago`. O endpoint ainda será implementado. |
+| `MERCADO_PAGO_ENVIRONMENT` | `test` durante desenvolvimento; `production` após a validação, com credenciais de produção. A variável não transforma um token produtivo em token de teste. |
+| `APP_URL` | URL HTTPS pública da loja na Vercel, incluindo o endereço temporário antes do domínio definitivo. A integração derivará dela as URLs de retorno ao checkout. |
+| `GUEST_SESSION_SECRET` | Segredo técnico da sessão de compra sem cadastro; já foi gerado no `.env` local. Usar um valor próprio em cada ambiente. |
+| `ARTWORK_STORAGE_BUCKET` | Nome previsto do bucket privado, `artworks`. A criação do bucket ainda está pendente. |
+| `CHECKOUT_ENABLED` | Reservado para a integração; manter `false` até preços, pedidos e pagamento serem validados. |
+
+Na Vercel, as variáveis deverão ser cadastradas nos ambientes correspondentes, com as chaves privadas como segredos. Elas não são publicadas pelo GitHub com o `.env`, que está ignorado. O frontend atual usa JavaScript comum: o prefixo `NEXT_PUBLIC_` sozinho não disponibiliza uma variável no navegador; a integração terá de expor apenas a configuração pública necessária.
+
+Para esta loja própria, o Checkout Pro pode criar a preferência no backend e abrir a URL de pagamento recebida. Não são necessários Client ID/Client Secret de OAuth, credenciais de outras contas vendedoras ou uma chave global de idempotência: cada pedido terá sua própria identificação. Nunca marcar um pedido como pago somente pelos parâmetros de retorno do navegador.
+
+Documentação: [criação de preferência](https://www.mercadopago.com.br/developers/pt/reference/online-payments/checkout-pro-preferences/create-preference/post), [notificações assinadas](https://www.mercadopago.com.br/developers/pt/docs/checkout-pro-preferences/payment-notifications), [credenciais e contas de teste](https://www.mercadopago.com.br/developers/pt/docs/checkout-pro-preferences/test-accounts).
