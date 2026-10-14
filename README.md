@@ -10,7 +10,17 @@ Requer Node.js 18 ou superior. Não há dependências para instalar.
 npm run dev
 ```
 
-Abra `http://localhost:3100`. As configurações de fotos e contato continuam em `.env`, conforme `.env.example`. As credenciais da Pexels são usadas apenas no servidor. Sem a chave, a galeria usa as imagens locais existentes.
+Abra `http://localhost:3100`. As configurações de contato continuam em `.env`, conforme `.env.example`. O banner, as categorias, os produtos e a galeria usam as imagens originais locais de `public/assets/real/`. A galeria não consulta `/api/photos`; `/api/config` e os endpoints comerciais continuam disponíveis. As credenciais da Pexels, quando configuradas para o endpoint existente, ficam somente no servidor.
+
+## Fotos originais e revisão funcional
+
+O topo apresenta Studio L, Bel Cosméticos, Áurea e 15ª Feira Baiana, nessa ordem. O carrossel usa transição horizontal de 700 ms e intervalo de 5,5 s, com pausa por botão, foco, hover, aba oculta e saída da tela. Os clones de continuidade ficam ocultos das tecnologias assistivas. Teclado, toque e movimento reduzido mantêm a navegação manual.
+
+`public/real-media.js` contém o mapa fornecido. `public/real-photos.js` controla o carrossel; `public/real-photos.css` aplica os enquadramentos às três páginas. Foram preservados os 60 arquivos WebP do pacote, incluindo variantes responsivas. Cartões e o letreiro Áurea usam `contain`; a imagem Sinal3 é identificada como arte original. A identidade, o loop de marcas, os seis IDs e os campos comerciais permanecem. Os originais e as referências de trabalho ficam fora de `public/` e são ignorados pelo Git.
+
+A revisão corrige foco e teclado em menu, busca, modais e carrinho; preserva o rascunho do cartão na sessão; bloqueia salvamento repetido e salvamento durante a conferência de arte. Alterações de quantidade preservam o foco no carrinho e no checkout. Consultas de preço têm limite de tempo e agrupam alterações rápidas de campos. A Montserrat mantém os pesos originais em WOFF2.
+
+As três páginas foram verificadas no Chromium em 360, 390, 768, 1024, 1280 e 1440 px. O registro local da revisão está em `audit/real-integration/`; a aplicação não possui tarefas de lint, TypeScript ou build. A sintaxe é verificada com `node --check`. Preço, upload real e pagamento continuam sujeitos às integrações descritas abaixo.
 
 ## Personalização e carrinho
 

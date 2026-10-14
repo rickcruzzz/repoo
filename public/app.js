@@ -13,9 +13,32 @@ let lastFocus = null;
 let config = { whatsapp:'', email:'', photosEnabled:false };
 let cart = store.readCart();
 let productPriceSequence = 0;
+const inertBackground = new Map();
 
-function saveCart() {
-  store.writeCart(cart);
+function setBackgroundInert(active) {
+  if (active) {
+    for (const element of document.body.children) {
+      if (element === drawer || element === overlay || element === dialog || element.tagName === 'SCRIPT') continue;
+      inertBackground.set(element, element.inert);
+      element.inert = true;
+    }
+  } else {
+    for (const [element, wasInert] of inertBackground) element.inert = wasInert;
+    inertBackground.clear();
+  }
+}
+function syncScrollLock() {
+  document.body.classList.toggle('locked', dialog.open || drawer.classList.contains('open'));
+}
+function focusResults() {
+  const heading = $('#solucoes h2');
+  heading.tabIndex = -1;
+  heading.focus({ preventScroll:true });
+  $('#solucoes').scrollIntoView();
+}
+
+function saveCart(persist = true) {
+  if (persist) store.writeCart(cart);
   quoteCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
   renderDrawer();
 }
@@ -35,14 +58,13 @@ function renderProducts() {
   for (const product of visible) {
     const card = document.createElement('article');
     card.className = 'product-card';
-    card.innerHTML = `<div class="product-image"><img src="${product.image}" alt="Imagem ilustrativa de ${product.name.toLocaleLowerCase('pt-BR')}" loading="lazy"><span class="badge">${product.badge}</span><button type="button" class="quickview" data-view="${product.id}">Personalizar ↗</button></div><div class="product-body"><div><small>${product.category}</small><h3>${product.name}</h3><p>${product.teaser}</p></div><button type="button" data-add="${product.id}" aria-label="Personalizar ${product.name}">↗</button></div>`;
-    card.querySelector('img').loading = 'eager';
+    card.innerHTML = `<div class="product-image"><img alt="${product.imageAlt}" loading="lazy"><span class="badge">${product.badge}</span><button type="button" class="quickview" data-view="${product.id}">Personalizar ↗</button></div><div class="product-body"><div><small>${product.category}</small><h3>${product.name}</h3><p>${product.teaser}</p></div><button type="button" data-add="${product.id}" aria-label="Personalizar ${product.name}">↗</button></div>`;
     const imageArea = card.querySelector('.product-image');
-    imageArea.tabIndex = 0;
-    imageArea.setAttribute('role', 'button');
-    imageArea.setAttribute('aria-label', `Ver detalhes de ${product.name}`);
+    imageArea.classList.add('real-product-image');
+    imageArea.dataset.photo = product.id;
+    window.UP_REAL_IMAGE(card.querySelector('img'), window.UP_REAL_MEDIA.products[product.id], '(max-width:700px) calc((100vw - 48px) / 2), (max-width:960px) calc((100vw - 76px) / 3), 408px');
+    card.querySelector('.quickview').setAttribute('aria-label', `Personalizar ${product.name}`);
     imageArea.addEventListener('click', event => { if (!event.target.closest('button')) showProduct(product.id); });
-    imageArea.addEventListener('keydown', event => { if (event.target === imageArea && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); showProduct(product.id); } });
     grid.append(card);
   }
   $('#resultCount').textContent = `${visible.length} ${visible.length === 1 ? 'produto' : 'produtos'}`;
@@ -56,8 +78,11 @@ function showProduct(id, lineId = null) {
   const product = products.find(item => item.id === id);
   if (!product) return;
   const existing = cart.find(item => item.lineId === lineId && item.id === id);
-  $('#productDetail').innerHTML = `<div class="product-detail"><img src="${product.image}" alt="Imagem ilustrativa de ${product.name.toLocaleLowerCase('pt-BR')}"><div class="detail-copy"><span class="eyebrow">${product.category} / personalize seu produto</span><h2>${product.name}</h2><p>${product.description}</p><ul>${product.options.map(option => `<li>${option}</li>`).join('')}</ul><form id="productConfigForm"><div class="checkout-fields two-col">${store.fieldsHtml(product, existing?.configuration, 'product-')}</div><label class="checkout-field"><span>Quantidade</span><input name="quantity" type="number" min="1" max="99" step="1" required value="${existing?.quantity || 1}" inputmode="numeric"></label><p id="productPrice" role="status" aria-live="polite">Complete a personalização para conferir o preço.</p><button type="submit" class="button button-dark">${existing ? 'Salvar personalização' : 'Adicionar ao carrinho'} <span aria-hidden="true">↗</span></button></form><a class="credit" href="${product.photo}" target="_blank" rel="noopener noreferrer">Foto ilustrativa: ${product.credit} / Pexels ↗</a></div></div>`;
+  $('#productDetail').innerHTML = `<div class="product-detail"><img alt="${product.imageDetail.alt}"><div class="detail-copy"><span class="eyebrow">${product.category} / personalize seu produto</span><h2 id="productTitle">${product.name}</h2><p>${product.description}</p><ul>${product.options.map(option => `<li>${option}</li>`).join('')}</ul><form id="productConfigForm"><div class="checkout-fields two-col">${store.fieldsHtml(product, existing?.configuration, 'product-')}</div><label class="checkout-field"><span>Quantidade</span><input name="quantity" type="number" min="1" max="99" step="1" required value="${existing?.quantity || 1}" inputmode="numeric"></label><p id="productPrice" role="status" aria-live="polite">Complete a personalização para conferir o preço.</p><button type="submit" class="button button-dark">${existing ? 'Salvar personalização' : 'Adicionar ao carrinho'} <span aria-hidden="true">↗</span></button></form></div></div>`;
   const form = $('#productConfigForm');
+  window.UP_REAL_IMAGE($('#productDetail img'), product.imageDetail, '(max-width:700px) calc(100vw - 30px), 425px');
+  let priceTimer;
+  let adding = false;
   async function updatePrice() {
     const sequence = ++productPriceSequence;
     const item = { id, quantity:Number(form.elements.quantity.value), configuration:store.readFields(form, product) };
@@ -65,10 +90,17 @@ function showProduct(id, lineId = null) {
     const quote = await store.price(item);
     if (sequence === productPriceSequence && form.isConnected) $('#productPrice').textContent = store.priceText(quote);
   }
-  form.addEventListener('input', event => { event.target.setCustomValidity?.(''); updatePrice(); });
-  form.addEventListener('change', updatePrice);
+  function schedulePrice() {
+    clearTimeout(priceTimer);
+    ++productPriceSequence;
+    $('#productPrice').textContent = 'Conferindo preço…';
+    priceTimer = setTimeout(() => { if (form.isConnected && dialog.open) updatePrice(); }, 180);
+  }
+  form.addEventListener('input', event => { event.target.setCustomValidity?.(''); schedulePrice(); });
+  form.addEventListener('change', schedulePrice);
   form.addEventListener('submit', event => {
     event.preventDefault();
+    if (adding) return;
     const configuration = store.readFields(form, product);
     if (!store.validConfiguration(id, configuration)) {
       const invalid = [...form.querySelectorAll('input[type="number"][data-config-field]')].find(input => !Number.isFinite(Number(input.value)) || Number(input.value) <= 0);
@@ -77,27 +109,43 @@ function showProduct(id, lineId = null) {
       return;
     }
     if (!form.reportValidity()) return;
-    cart = store.addConfigured(id, configuration, Number(form.elements.quantity.value), existing?.lineId);
-    saveCart();
+    adding = true;
+    form.querySelector('button[type="submit"]').disabled = true;
+    try {
+      cart = store.addConfigured(id, configuration, Number(form.elements.quantity.value), existing?.lineId);
+      saveCart(false);
+    } catch {
+      adding = false;
+      form.querySelector('button[type="submit"]').disabled = false;
+      $('#productPrice').textContent = 'Não foi possível salvar o carrinho neste navegador. Confira o armazenamento e tente novamente.';
+      return;
+    }
+    clearTimeout(priceTimer);
     dialog.close();
     openDrawer();
   });
   dialog.showModal();
+  syncScrollLock();
   updatePrice();
 }
 function openDrawer() {
+  if (drawer.classList.contains('open')) return;
   lastFocus = document.activeElement;
   overlay.hidden = false;
+  drawer.inert = false;
   drawer.classList.add('open');
   drawer.setAttribute('aria-hidden', 'false');
-  document.body.classList.add('locked');
+  setBackgroundInert(true);
+  syncScrollLock();
   $('#closeDrawer').focus();
 }
 function closeDrawer() {
   drawer.classList.remove('open');
   drawer.setAttribute('aria-hidden', 'true');
+  drawer.inert = true;
   overlay.hidden = true;
-  document.body.classList.remove('locked');
+  setBackgroundInert(false);
+  syncScrollLock();
   $('#contactMessage').textContent = '';
   lastFocus?.focus?.();
 }
@@ -117,6 +165,7 @@ function renderDrawer() {
     row.className = 'drawer-item';
     row.innerHTML = `<img src="${product.image}" alt=""><div><strong>${product.name}</strong><small class="drawer-configuration"></small><small class="drawer-price" role="status"></small><a class="drawer-edit-link" href="${store.editUrl(item)}">Editar personalização ↗</a><div class="drawer-quantity"><button type="button" data-decrease="${item.lineId}" aria-label="Diminuir ${product.name}">−</button><span>${item.quantity}</span><button type="button" data-increase="${item.lineId}" aria-label="Aumentar ${product.name}">+</button></div></div><button type="button" data-remove="${item.lineId}" aria-label="Remover ${product.name}">×</button>`;
     row.querySelector('.drawer-configuration').textContent = store.summary(item);
+    window.UP_REAL_IMAGE(row.querySelector('img'), window.UP_REAL_MEDIA.products[product.id], '76px', true);
     if (item.id !== 'cartoes') row.querySelector('.drawer-edit-link').addEventListener('click', event => { event.preventDefault(); closeDrawer(); showProduct(item.id, item.lineId); });
     row.querySelector('.drawer-price').textContent = 'Conferindo preço…';
     store.price(item).then(quote => { if (row.isConnected) row.querySelector('.drawer-price').textContent = store.priceText(quote); });
@@ -130,50 +179,28 @@ function openCheckout() {
   if (incomplete && incomplete.id !== 'cartoes') { closeDrawer(); showProduct(incomplete.id, incomplete.lineId); return; }
   window.location.href = incomplete ? store.editUrl(incomplete) : '/checkout.html';
 }
-function fallbackPhotos() {
-  return [
-    { src:'/assets/fachada.jpg', alt:'Letreiro em fachada', photographer:'aysenurhamra', url:'https://www.pexels.com/photo/an-acrylic-signage-of-a-business-9101747/' },
-    { src:'/assets/cartoes.jpg', alt:'Cartões em branco', photographer:'Kaboompics', url:'https://www.pexels.com/photo/blank-business-cards-on-textured-surface-8947634/' },
-    { src:'/assets/hero.jpg', alt:'Impressão profissional', photographer:'Deybson Mallony', url:'https://www.pexels.com/photo/close-up-of-a-printed-photo-5727002/' }
-  ];
-}
 function renderInspiration(photos) {
   const gallery = $('#inspirationGrid');
+  gallery.classList.add('real-gallery-grid');
   gallery.replaceChildren();
   for (const photo of photos.slice(0, 3)) {
-    const card = document.createElement('div');
-    card.className = 'inspiration-card';
+    const card = document.createElement('figure');
+    card.className = 'inspiration-card real-gallery-card';
     const img = document.createElement('img');
-    img.src = photo.src;
-    img.alt = photo.alt || 'Inspiração visual';
     img.loading = 'lazy';
-    const credit = document.createElement('a');
-    credit.href = photo.url;
-    credit.target = '_blank';
-    credit.rel = 'noopener noreferrer';
-    credit.textContent = `Foto: ${photo.photographer} / Pexels ↗`;
-    card.append(img, credit);
+    window.UP_REAL_IMAGE(img, photo, '(max-width:700px) calc(100vw - 34px), (max-width:960px) 30vw, 408px');
+    const caption = document.createElement('figcaption');
+    caption.textContent = photo.caption;
+    card.append(img, caption);
     gallery.append(card);
   }
 }
-async function loadConfigAndPhotos() {
+async function loadConfiguration() {
   try {
     const response = await fetch('/api/config');
     if (response.ok) config = await response.json();
   } catch { /* imagens locais mantêm a vitrine funcional */ }
-  if (!config.photosEnabled) {
-    $('#inspirationStatus').textContent = '';
-    return;
-  }
-  try {
-    const response = await fetch('/api/photos?query=design%20studio%20printing');
-    if (!response.ok) throw new Error('API indisponível');
-    const data = await response.json();
-    if (data.photos?.length) {
-      renderInspiration(data.photos);
-      $('#inspirationStatus').textContent = '';
-    }
-  } catch { $('#inspirationStatus').textContent = ''; }
+  $('#inspirationStatus').textContent = '';
 }
 
 grid.addEventListener('click', event => {
@@ -196,23 +223,37 @@ $('#drawerItems').addEventListener('click', event => {
     const item = cart.find(entry => entry.lineId === decrease.dataset.decrease);
     item.quantity = Math.max(1, item.quantity - 1);
   } else return;
-  saveCart();
+  try { saveCart(); }
+  catch {
+    cart = store.readCart();
+    saveCart(false);
+    $('#contactMessage').textContent = 'Não foi possível atualizar o carrinho neste navegador. Tente novamente.';
+  }
+  const action = increase ? 'increase' : decrease ? 'decrease' : null;
+  const lineId = increase?.dataset.increase || decrease?.dataset.decrease;
+  const nextFocus = action ? [...drawer.querySelectorAll(`[data-${action}]`)].find(button => button.dataset[action] === lineId) : drawer.querySelector('.drawer-edit-link') || $('#closeDrawer');
+  nextFocus?.focus({ preventScroll:true });
 });
 document.querySelectorAll('.filter').forEach(button => button.addEventListener('click', () => setFilter(button.dataset.filter)));
 document.querySelectorAll('[data-category], [data-nav-filter]').forEach(link => link.addEventListener('click', () => { searchTerm = ''; $('#siteSearch').value = ''; setFilter(link.dataset.category || link.dataset.navFilter); $('#mainNav').classList.remove('open'); $('#menuToggle').setAttribute('aria-expanded', 'false'); }));
 $('#resetFilters').addEventListener('click', () => { searchTerm = ''; $('#siteSearch').value = ''; setFilter('Todos'); });
 $('#searchToggle').addEventListener('click', () => { const panel = $('#searchPanel'); panel.hidden = !panel.hidden; $('#searchToggle').setAttribute('aria-expanded', String(!panel.hidden)); if (!panel.hidden) $('#siteSearch').focus(); });
 $('#siteSearch').addEventListener('input', event => { searchTerm = event.target.value.trim(); setFilter('Todos'); });
-$('#siteSearch').addEventListener('keydown', event => { if (event.key === 'Enter') { $('#searchPanel').hidden = true; $('#searchToggle').setAttribute('aria-expanded', 'false'); $('#solucoes').scrollIntoView(); } });
-$('#searchGo').addEventListener('click', () => { $('#searchPanel').hidden = true; $('#searchToggle').setAttribute('aria-expanded', 'false'); $('#solucoes').scrollIntoView(); });
+$('#siteSearch').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); $('#searchPanel').hidden = true; $('#searchToggle').setAttribute('aria-expanded', 'false'); focusResults(); } });
+$('#searchGo').addEventListener('click', () => { $('#searchPanel').hidden = true; $('#searchToggle').setAttribute('aria-expanded', 'false'); focusResults(); });
 $('#menuToggle').addEventListener('click', () => { const open = $('#mainNav').classList.toggle('open'); $('#menuToggle').setAttribute('aria-expanded', String(open)); });
 document.querySelectorAll('#mainNav a').forEach(link => link.addEventListener('click', () => { $('#mainNav').classList.remove('open'); $('#menuToggle').setAttribute('aria-expanded', 'false'); }));
 document.querySelectorAll('#openQuote,#contactQuote,#footerQuote').forEach(button => button.addEventListener('click', openDrawer));
 $('#closeDrawer').addEventListener('click', closeDrawer);
 $('#closeProduct').addEventListener('click', () => dialog.close());
+dialog.addEventListener('close', syncScrollLock);
 $('#overlay').addEventListener('click', closeDrawer);
 $('#sendQuote').addEventListener('click', openCheckout);
 document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && !drawer.classList.contains('open') && !dialog.open) {
+    if (!$('#searchPanel').hidden) { $('#searchPanel').hidden = true; $('#searchToggle').setAttribute('aria-expanded','false'); $('#searchToggle').focus(); }
+    else if ($('#mainNav').classList.contains('open')) { $('#mainNav').classList.remove('open'); $('#menuToggle').setAttribute('aria-expanded','false'); $('#menuToggle').focus(); }
+  }
   if (!drawer.classList.contains('open')) return;
   if (event.key === 'Escape') { closeDrawer(); return; }
   if (event.key !== 'Tab') return;
@@ -225,9 +266,11 @@ $('#year').textContent = new Date().getFullYear();
 $('#projectNotes').value = sessionStorage.getItem('cvt-project-notes') || '';
 $('#projectNotes').addEventListener('input', event => sessionStorage.setItem('cvt-project-notes', event.target.value));
 renderProducts();
-saveCart();
-renderInspiration(fallbackPhotos());
-loadConfigAndPhotos();
+quoteCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+renderDrawer();
+drawer.inert = true;
+renderInspiration(window.UP_REAL_MEDIA.gallery);
+loadConfiguration();
 function openProductFromLocation() {
   const query = new URLSearchParams(window.location.hash.slice(1));
   if (query.has('produto')) { if (drawer.classList.contains('open')) closeDrawer(); showProduct(query.get('produto'), query.get('line')); }

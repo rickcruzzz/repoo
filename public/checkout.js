@@ -14,6 +14,7 @@ let paymentMethod = 'pix';
 let config = { whatsapp:'', email:'' };
 let cepTimer;
 let lastLookedUpCep = '';
+let briefPriceTimer;
 
 try { Object.assign(itemBriefs, JSON.parse(sessionStorage.getItem('cvt-item-briefs') || '{}')); } catch { /* campos podem ser preenchidos novamente */ }
 for (const item of cart) if (!itemBriefs[item.lineId] && itemBriefs[item.id]) itemBriefs[item.lineId] = itemBriefs[item.id];
@@ -53,6 +54,7 @@ function renderCart() {
       row.querySelector('.item-meta').textContent = store.summary(item);
       for (const input of row.querySelectorAll('[data-item-field]')) input.value = itemBriefs[item.lineId]?.[input.dataset.itemField] || 'a-definir';
     }
+    window.UP_REAL_IMAGE(row.querySelector('img'), window.UP_REAL_MEDIA.products[product.id], '(max-width:700px) 68px, 94px', true);
     target.append(row);
     row.querySelector('[data-price-line]').textContent = store.priceText(quotes.get(item.lineId));
   }
@@ -116,7 +118,7 @@ function setStep(next) {
     else item.removeAttribute('aria-current');
   });
   if (step === 3) renderReview();
-  window.scrollTo({ top:0, behavior:'smooth' });
+  window.scrollTo({ top:0, behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   const heading = $(`[data-step="${step}"] h2`);
   heading.tabIndex = -1;
   heading.focus({ preventScroll:true });
@@ -317,6 +319,18 @@ $('#checkoutCart').addEventListener('click', event => {
   }
   else if (increase) changeQuantity(increase.dataset.increase, 1);
   else if (decrease) changeQuantity(decrease.dataset.decrease, -1);
+  else return;
+  const action = increase ? 'increase' : decrease ? 'decrease' : null;
+  const lineId = increase?.dataset.increase || decrease?.dataset.decrease;
+  const nextFocus = action
+    ? [...$('#checkoutCart').querySelectorAll(`[data-${action}]`)].find(button => button.dataset[action] === lineId)
+    : $('#checkoutCart .item-customize-link');
+  if (nextFocus) nextFocus.focus({ preventScroll:true });
+  else {
+    const heading = $('[data-step="0"] h2');
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll:true });
+  }
 });
 function updateBrief(event) {
   const field = event.target.closest('[data-config-field]');
@@ -331,7 +345,11 @@ function updateBrief(event) {
     const row = field.closest('.checkout-cart-item');
     row.querySelector('.item-meta').textContent = store.summary(item);
     row.querySelector('[data-price-line]').textContent = 'Conferindo preço…';
-    refreshPrices();
+    clearTimeout(briefPriceTimer);
+    ++priceSequence;
+    quotes.delete(item.lineId);
+    renderSummary();
+    briefPriceTimer = setTimeout(refreshPrices, 180);
     return;
   }
   const target = event.target.closest('[data-item-field]');
@@ -376,7 +394,6 @@ $('#projectDetails').addEventListener('input', event => sessionStorage.setItem('
 $('#year').textContent = new Date().getFullYear();
 renderCart();
 renderSummary();
-store.writeCart(cart);
 refreshPrices();
 renderPaymentDetail();
 updateFinishAvailability();

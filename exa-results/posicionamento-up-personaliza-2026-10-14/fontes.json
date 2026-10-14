@@ -1,0 +1,756 @@
+{
+  "consultedOn": "2026-10-14",
+  "site": "https://henriquesytems.vercel.app",
+  "scope": "Pesquisa e plano; nenhuma mudança na aplicação",
+  "methodology": {
+    "searches": 17,
+    "requestedResults": 98,
+    "returnedResults": 98,
+    "uniqueURLs": 90,
+    "fetchCalls": 6,
+    "requestedFetchPages": 23,
+    "workstreams": 4,
+    "note": "Ocorrencias nao sao fontes independentes. Metadados de publicacao do Exa nao foram usados como data validada; datas no corpo das fontes tiveram preferencia. Textos expandidos limitados entre 6000 e 7200 caracteres por pagina."
+  },
+  "queries": [
+    {
+      "id": "mercado_1",
+      "query": "Pesquisa oficial do Sebrae ou Cetic.br sobre como pequenos negócios brasileiros vendem pela internet, usam WhatsApp e compram materiais de divulgação personalizados, com dados e metodologia identificados",
+      "objective": "Priorizar pesquisas primárias brasileiras e dados datados; separar uso de canais de venda de demanda por comunicação visual. Excluir blogs de agências e projeções sem metodologia.",
+      "numResults": 6
+    },
+    {
+      "id": "concorrentes_1",
+      "query": "Lojas brasileiras de gráfica online com página de cartão de visita e adesivo personalizado que mostra configuração, preço, tiragem, envio de arte, prazo de produção e cálculo de frete, incluindo Printi, Atual Card, FuturaIM e 360imprimir",
+      "objective": "Localizar páginas oficiais de produto para comparar o percurso de compra, não rankings ou afiliados. Capturar diferenciais visíveis sem presumir qualidade ou conversão.",
+      "numResults": 6
+    },
+    {
+      "id": "concorrentes_2",
+      "query": "Loja brasileira para comprar letreiro personalizado online em acrílico, PVC ou neon LED com simulação de preço por tamanho, aprovação da arte, entrega e instalação descritas",
+      "objective": "Páginas oficiais de fabricantes e lojas com compra ou orçamento online; avaliar customização, prova de execução, envio e restrições. Não concluir que uma marca lidera sem dados.",
+      "numResults": 6
+    },
+    {
+      "id": "conversao_1",
+      "query": "Baymard Institute original ecommerce usability research reasons for cart abandonment unexpected shipping costs delivery dates guest checkout product images personalization",
+      "objective": "Priorizar resultados do próprio Baymard, estudos metodológicos e recomendações diretas. Identificar o que é evidência geral de ecommerce e o que não foi medido em gráficas brasileiras.",
+      "numResults": 6
+    },
+    {
+      "id": "mercado_2",
+      "query": "Dados oficiais ABIGRAF desempenho da indústria gráfica brasileira 2025 2026 produção embalagens impressos comunicação visual relatório",
+      "objective": "Encontrar dados publicados pela associação setorial; verificar período e perímetro da estatística. Não usar indústria gráfica total como tamanho do nicho de letreiros personalizados.",
+      "numResults": 6
+    },
+    {
+      "id": "mercado_3",
+      "query": "Orientação oficial Sebrae comércio online produtos personalizados impressão gráfica cartões adesivos pequenas empresas diferenciação preço valor entrega",
+      "objective": "Extrair dores e critérios de compra com evidência ou orientação do Sebrae. Separar orientação institucional de pesquisa quantitativa e de ofertas comerciais.",
+      "numResults": 6
+    },
+    {
+      "id": "concorrentes_3",
+      "query": "Página oficial 360imprimir Brasil cartões de visita personalizados configuração quantidade impressão preço design envio arte prazo entrega",
+      "objective": "Obter um benchmark distinto de gráfica online, produto e jornada real da página, com limitações claras. Excluir comparadores e publicidade de terceiros.",
+      "numResults": 6
+    },
+    {
+      "id": "conversao_2",
+      "query": "Google Search Central Merchant Center official product variants custom products online store price availability shipping information product rich results",
+      "objective": "Priorizar documentação oficial Google sobre elegibilidade e descoberta de produtos reais: páginas próprias, preço, estoque, frete e variantes personalizadas. Não tratar dados estruturados como garantia de ranking.",
+      "numResults": 6
+    },
+    {
+      "id": "mercado_4",
+      "query": "Boletim oficial ABIGRAF indústria gráfica Brasil primeiro segundo trimestre 2026 atividades de impressão embalagens demanda relatório econômico",
+      "objective": "Verificar se existe divulgação mais recente que os boletins 2025 encontrados. Não extrapolar produção industrial para procura online ou mercado específico da UP; registrar ausência de dado validado.",
+      "numResults": 6
+    },
+    {
+      "id": "concorrentes_4",
+      "query": "Página oficial de loja brasileira adesivo para vitrine personalizado sob medida impressão digital com medidas largura altura envio arte cálculo preço online e prazo produção",
+      "objective": "Buscar concorrentes de adesivação próxima do catálogo atual, e não apenas etiquetas de embalagem. Capturar instruções de aplicação, configuração comprável e condições reais sem rankings.",
+      "numResults": 6
+    },
+    {
+      "id": "conversao_3",
+      "query": "Baymard Institute ecommerce product image research in scale images close up images homepage product finding categories mobile ecommerce primary call to action",
+      "objective": "Obter pesquisa própria para orientação de fotos reais, escala, acabamentos e navegação de catálogo. Excluir citações sem metodologia e promessas universais de aumento de conversão.",
+      "numResults": 6
+    },
+    {
+      "id": "conversao_4",
+      "query": "Google Ads official Keyword Planner search volumes estimates conversion tracking ecommerce purchase value bidding small online store personalized products",
+      "objective": "Documentação oficial para escolher termos com intenção de compra e medir vendas e custo por aquisição. Não inventar volumes, CPC, ROAS ou resultados sem conta e dados da UP.",
+      "numResults": 6
+    },
+    {
+      "id": "funil_1",
+      "query": "Baymard original research ecommerce guest checkout account selection email checkout step order complex product configuration quantity price mobile checkout friction",
+      "objective": "Identificar padrões de redução de esforço em seleção e checkout, sem alegar um único funil vencedor. Preferir pesquisa direta do Baymard e contexto de uso; marcar limites de extrapolação para personalizados.",
+      "numResults": 5
+    },
+    {
+      "id": "funil_2",
+      "query": "Documentação oficial Mercado Pago Brasil Checkout Pro Checkout Bricks Pix mobile QR copia e cola status pagamento aprovado pendente recusado notificações webhooks",
+      "objective": "Validar requisitos de experiência de pagamento, estados reais e confirmação. Somente Mercado Pago oficial; não escolher arquitetura antes de avaliar loja, experiência móvel e implementação atual.",
+      "numResults": 5
+    },
+    {
+      "id": "funil_3",
+      "query": "Documentação oficial Mercado Pago recomendações checkout melhorar aprovação pagamentos cartão Pix segurança tentativas recuperar pagamentos recusados checkout Brasil",
+      "objective": "Distinguir aprovação de pagamento de conversão do site e coleta de intenção. Não usar slogans de aprovação como taxa comprovada da UP; registrar orientações práticas primárias.",
+      "numResults": 5
+    },
+    {
+      "id": "funil_4",
+      "query": "Baymard original ecommerce checkout delivery date shipping costs upfront order review abandoned checkout retain entered data errors recovery",
+      "objective": "Detalhar abandono após escolher produto: custo total, previsão de entrega, revisão redundante, dados preservados e recuperação de erro. Referenciar estudos originais, não percentuais copiados por agências.",
+      "numResults": 5
+    },
+    {
+      "id": "funil_5",
+      "query": "Mercado Pago documentação Brasil Checkout Pro comprador sem conta convidado Pix QR Code copia e cola Checkout Bricks exibir status pagamento",
+      "objective": "Validar se o comprador precisa de conta do Mercado Pago por solução e método, e como paga Pix no mesmo celular. Buscar páginas oficiais; não confundir compra sem cadastro na loja com regras do provedor.",
+      "numResults": 6
+    }
+  ],
+  "expandedPages": [
+    {
+      "url": "https://agenciasebrae.com.br/dados/whatsapp-se-consolida-nas-vendas-on-line-enquanto-facebook-e-lojas-proprias-perdem-folego/",
+      "quality": "Divulgacao institucional de pesquisa com periodo e amostra descritos"
+    },
+    {
+      "url": "https://www.printi.com.br/cartao-de-visita/",
+      "quality": "Pagina comercial propria; valida oferta e conteudo, nao desempenho nem alegacoes de lideranca"
+    },
+    {
+      "url": "https://www.futuraim.com.br/produto/adesivo-para-vitrine",
+      "quality": "Pagina comercial propria; valida oferta e conteudo, nao desempenho nem alegacoes de lideranca"
+    },
+    {
+      "url": "https://www.focolaser.com.br/produtos/letreiro-com-led-para-ambiente-interno-e-externo-fzwcs/",
+      "quality": "Pagina comercial propria; valida oferta e conteudo, nao desempenho nem alegacoes de lideranca"
+    },
+    {
+      "url": "https://www.mundoperfil.com.br/adesivo-para-vitrine-m2-sob-medida",
+      "quality": "Pagina comercial propria; valida oferta e conteudo, nao desempenho nem alegacoes de lideranca"
+    },
+    {
+      "url": "https://baymard.com/learn/ux-statistics",
+      "quality": "Pesquisa e guia do proprio instituto; ecommerce geral, aplicacao a UP exige validacao"
+    },
+    {
+      "url": "https://baymard.com/research-articles/in-scale-product-images",
+      "quality": "Pesquisa e guia do proprio instituto; ecommerce geral, aplicacao a UP exige validacao"
+    },
+    {
+      "url": "https://support.google.com/merchants/answer/7162856",
+      "quality": "Documentacao oficial do fornecedor; nao prova ganhos de conversao"
+    },
+    {
+      "url": "https://support.google.com/google-ads/answer/7337243",
+      "quality": "Documentacao oficial do fornecedor; nao prova ganhos de conversao"
+    },
+    {
+      "url": "https://developers.google.com/search/docs/appearance/structured-data/product",
+      "quality": "Documentacao oficial do fornecedor; nao prova ganhos de conversao"
+    },
+    {
+      "url": "https://www.atualcard.com.br/cartao-de-visita/74",
+      "quality": "Pagina comercial propria; valida oferta e conteudo, nao desempenho nem alegacoes de lideranca"
+    },
+    {
+      "url": "https://www.360imprimir.com.br/cartao-de-visita?id=4462",
+      "quality": "Pagina comercial propria; valida oferta e conteudo, nao desempenho nem alegacoes de lideranca"
+    },
+    {
+      "url": "https://www.360imprimir.com.br/Home/FAQ",
+      "quality": "Pagina comercial propria; valida oferta e conteudo, nao desempenho nem alegacoes de lideranca"
+    },
+    {
+      "url": "https://www.atacadoneon.com.br/neon-personalizado",
+      "quality": "Pagina comercial propria; valida oferta e conteudo, nao desempenho nem alegacoes de lideranca"
+    },
+    {
+      "url": "https://baymard.com/research-articles/checkout-flow-average-form-fields",
+      "quality": "Pesquisa e guia do proprio instituto; ecommerce geral, aplicacao a UP exige validacao"
+    },
+    {
+      "url": "https://baymard.com/learn/payment-ux",
+      "quality": "Pesquisa e guia do proprio instituto; ecommerce geral, aplicacao a UP exige validacao"
+    },
+    {
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-pro/how-tos/improve-payment-approval/recommendations",
+      "quality": "Documentacao oficial do fornecedor; nao prova ganhos de conversao"
+    },
+    {
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-bricks/additional-content/your-integrations/notifications",
+      "quality": "Documentacao oficial do fornecedor; nao prova ganhos de conversao"
+    },
+    {
+      "url": "https://abigraf.org.br/wp-content/uploads/2025/11/ABIGRAF-Boletim-Ind.-Grafica-3o.-Trimestre-25.pdf",
+      "quality": "Boletim setorial primario; segmento e periodo limitam extrapolacao"
+    },
+    {
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-pro/overview",
+      "quality": "Documentacao oficial do fornecedor; nao prova ganhos de conversao"
+    },
+    {
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-bricks/overview",
+      "quality": "Documentacao oficial do fornecedor; nao prova ganhos de conversao"
+    },
+    {
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-api-payments/integration-configuration/integrate-pix",
+      "quality": "Documentacao oficial do fornecedor; nao prova ganhos de conversao"
+    },
+    {
+      "url": "https://developers.google.com/analytics/devguides/collection/ga4/ecommerce",
+      "quality": "Documentacao oficial do fornecedor; nao prova ganhos de conversao"
+    }
+  ],
+  "searchCandidates": [
+    {
+      "title": "Transformação Digital nos Pequenos Negócios (2023)",
+      "url": "https://agenciasebrae.com.br/wp-content/uploads/2023/12/Pesquisa_TIC_2023-RESUMO_segmentos_economicos.pdf",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "mercado_1"
+    },
+    {
+      "title": "Transformação Digital - DataSebrae",
+      "url": "https://datasebrae.com.br/transformacao-digital/",
+      "exaPublicationMetadataUnverified": "2026-04-14T12:50:17.000Z",
+      "search": "mercado_1"
+    },
+    {
+      "title": "Transformação Digital Nos",
+      "url": "https://pr.agenciasebrae.com.br/wp-content/uploads/sites/16/2023/03/relatorio_TIC_2022_v6-COMPLETA.pdf",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "mercado_1"
+    },
+    {
+      "title": "Pesquisa Transformação Digital Nos Pequenos Negócios - 2023 | Sebrae/PR",
+      "url": "https://sebraepr.com.br/impulsiona/transformacao-digital-nos-pequenos-negocios-2023/",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "mercado_1"
+    },
+    {
+      "title": "WhatsApp se consolida nas vendas on-line enquanto ...",
+      "url": "https://agenciasebrae.com.br/dados/whatsapp-se-consolida-nas-vendas-on-line-enquanto-facebook-e-lojas-proprias-perdem-folego/",
+      "exaPublicationMetadataUnverified": "2023-05-24T15:55:32.000Z",
+      "search": "mercado_1"
+    },
+    {
+      "title": "Pesquisa PESQUISA TIC 2025 -Transformação Digital Nos Pequenos Negócios | Sebrae/PR",
+      "url": "https://sebraepr.com.br/impulsiona/pesquisa-tic-2025-transformacao-digital-nos-pequenos-negocios/",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "mercado_1"
+    },
+    {
+      "title": "Cartão de Visita | Imprima na Printi",
+      "url": "https://www.printi.com.br/cartao-de-visita/",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_1"
+    },
+    {
+      "title": "Adesivos Personalizados | Printi",
+      "url": "https://www.printi.com.br/adesivos-personalizados/",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_4"
+    },
+    {
+      "title": "Cartão de Visita Personalizado | Gráfica Online Atual Card",
+      "url": "https://www.atualcard.com.br/cartao-de-visita/74",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_1"
+    },
+    {
+      "title": "Adesivos Personalizados com Corte Especial | Printi",
+      "url": "https://www.printi.com.br/adesivos-corte-especial/",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_1"
+    },
+    {
+      "title": "FuturaIM Gráfica Online | Impressão de Qualidade",
+      "url": "https://www.futuraim.com.br/",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_1"
+    },
+    {
+      "title": "Cartão de Visita Em Hot Stamping | FuturaIM",
+      "url": "https://www.futuraim.com.br/produto/cartao-de-visita-em-hot-stamping?id=3727",
+      "exaPublicationMetadataUnverified": "2026-06-16T22:21:46.000Z",
+      "search": "concorrentes_1"
+    },
+    {
+      "title": "Neon LED Personalizado Do Seu Jeito",
+      "url": "https://www.atacadoneon.com.br/neon-personalizado",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_2"
+    },
+    {
+      "title": "Neon LED sob medida para marcas que querem ser lembradas",
+      "url": "https://www.atacadoneon.com.br/",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_2"
+    },
+    {
+      "title": "Placa de LED Personalizada",
+      "url": "https://www.atacadoneon.com.br/placa-de-led",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_2"
+    },
+    {
+      "title": "Tudo em Neon",
+      "url": "https://tudoemneon.com.br/",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_2"
+    },
+    {
+      "title": "Letreiro com LED - Para ambiente interno e externo - Foco Laser",
+      "url": "https://www.focolaser.com.br/produtos/letreiro-com-led-para-ambiente-interno-e-externo-fzwcs/",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_2"
+    },
+    {
+      "title": "Letreiro Redondo/Quadrado – Jeito Único Art & Laser",
+      "url": "https://jeitounicoartlaser.com.br/produto/letreiro-redondo-quadrado/",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_2"
+    },
+    {
+      "title": "E-Commerce Cart & Checkout Usability Research – Baymard",
+      "url": "https://baymard.com/research/checkout-usability",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_4"
+    },
+    {
+      "title": "E-Commerce: Why Customers Abandon Their Shopping Cart – Baymard",
+      "url": "https://baymard.com/research-articles/cart-abandonment",
+      "exaPublicationMetadataUnverified": "2011-01-19T10:31:00.000Z",
+      "search": "conversao_1"
+    },
+    {
+      "title": "Reasons for Cart Abandonment – Why 70% of Do So – Baymard",
+      "url": "https://baymard.com/research-articles/ecommerce-checkout-usability-report-and-benchmark",
+      "exaPublicationMetadataUnverified": "2016-09-21T07:47:00.000Z",
+      "search": "conversao_1"
+    },
+    {
+      "title": "40+ UX Statistics (from 200,000 hours of UX Research) – Baymard",
+      "url": "https://baymard.com/learn/ux-statistics",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_1"
+    },
+    {
+      "title": "Checkout Optimization & Reducing Abandonments",
+      "url": "https://m.media-amazon.com/images/G/02/amazonservices/payments/website/Baymard_Report_Final._CB512367315_.pdf",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_1"
+    },
+    {
+      "title": "Product Pages Need to Show 'Estimated Shipping Costs' (Yet 43% of Sites Don't) – Baymard",
+      "url": "https://baymard.com/research-articles/show-shipping-costs-on-product-pages",
+      "exaPublicationMetadataUnverified": "2017-06-20T06:11:00.000Z",
+      "search": "conversao_1"
+    },
+    {
+      "title": "Dados Econômicos - Abigraf Nacional",
+      "url": "https://abigraf.org.br/dados-economicos/",
+      "exaPublicationMetadataUnverified": "2022-01-24T00:00:00.000Z",
+      "search": "mercado_4"
+    },
+    {
+      "title": "Indústria Gráfica Brasileira 3º. Trimestre / 2025",
+      "url": "https://abigraf.org.br/wp-content/uploads/2025/11/ABIGRAF-Boletim-Ind.-Grafica-3o.-Trimestre-25.pdf",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "mercado_4"
+    },
+    {
+      "title": "Boletim Econômico Nº 65 – 2º trimestre 2025",
+      "url": "https://abigraf.org.br/wp-content/uploads/2025/10/Producao-da-Industia-Grafica-ABIGRAF-2o.-Tri-2025.pdf",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "mercado_4"
+    },
+    {
+      "title": "Indústria Gráfica Brasileira",
+      "url": "https://abigraf.org.br/wp-content/uploads/2025/05/Industria-Grafica-Brasileira-Maio-25.pdf",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "mercado_2"
+    },
+    {
+      "title": "Boletim de Atividade Industrial",
+      "url": "https://abigraf.org.br/wp-content/uploads/2025/10/boletim_economico_0065.pdf",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "mercado_4"
+    },
+    {
+      "title": "Boletim de Atividade Industrial",
+      "url": "https://abigraf.org.br/wp-content/uploads/2025/06/boletim_economico_0064.pdf",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "mercado_4"
+    },
+    {
+      "title": "Comércio",
+      "url": "https://www.sebrae-sc.com.br/storage/pdf/SebraeSC-Print-on-demand.pdf",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "mercado_3"
+    },
+    {
+      "title": "Gráfica",
+      "url": "https://bibliotecas.sebrae.com.br/chronus/ARQUIVOS_CHRONUS/IDEIAS_DE_NEGOCIO/PDFS/ideia-de-negocio_grafica.pdf",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "mercado_3"
+    },
+    {
+      "title": "Vendas online: como vender pela Internet | Sebrae Minas",
+      "url": "https://sebraemg.com.br/vendas/",
+      "exaPublicationMetadataUnverified": "2021-07-08T18:49:23.000Z",
+      "search": "mercado_3"
+    },
+    {
+      "title": "Serviços e Produtos Personalizados: veja como MEIs podem lucar | Sebrae RS",
+      "url": "https://digital.sebraers.com.br/blog/marketing-e-vendas/como-meis-podem-lucrar-com-servicos-e-produtos-personalizados/",
+      "exaPublicationMetadataUnverified": "2026-04-28T19:32:03.000Z",
+      "search": "mercado_3"
+    },
+    {
+      "title": "Dicas e orientações sobre o e-commerce de móveis e artigos para a casa",
+      "url": "https://bibliotecas.sebrae.com.br/chronus/ARQUIVOS_CHRONUS/bds/bds.nsf/8799ddb4475cfcb951c07675cf9713c1/$File/5775.pdf",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "mercado_3"
+    },
+    {
+      "title": "Como vender produtos artesanais e personalizados no e-commerce - Empreender",
+      "url": "https://empreender.com.br/como-vender-produtos-artesanais-e-personalizados-no-e-commerce/",
+      "exaPublicationMetadataUnverified": "2026-05-20T19:13:01.000Z",
+      "search": "mercado_3"
+    },
+    {
+      "title": "Cartão de Visita | Imprimir online 1000 por R$ 52,99",
+      "url": "https://www.360imprimir.com.br/cartao-de-visita?id=4462",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_3"
+    },
+    {
+      "title": "Perguntas mais frequentes sobre o processo de compra na 360imprimir",
+      "url": "https://www.360imprimir.com.br/Home/FAQ",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_3"
+    },
+    {
+      "title": "360imprimir | Gráfica Online, Produtos Promocionais Personalizados",
+      "url": "https://360imprimir.com.br/",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_3"
+    },
+    {
+      "title": "Cartão de Visita para Professor de Educação Física | 1000 unidades por R$ 24,99 | 360imprimir",
+      "url": "https://www.360imprimir.com.br/cartao-de-visita/professor-educacao-fisica/MobileOptions",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_3"
+    },
+    {
+      "title": "360imprimir | Gráfica Online, Produtos Promocionais Personalizados",
+      "url": "https://www.360imprimir.com.br/Home",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_3"
+    },
+    {
+      "title": "360 imprimir | Fornecedor de Cartões de Visita",
+      "url": "https://fornecedoresdeconfianca.com.br/fornecedor/360-imprimir/",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_3"
+    },
+    {
+      "title": "Best practices for advertising customized products - Google Merchant Center Help",
+      "url": "https://support.google.com/merchants/answer/7162856",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_2"
+    },
+    {
+      "title": "Product data specification - Google Merchant Center Help",
+      "url": "https://support.google.com/merchants/answer/7052112",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_2"
+    },
+    {
+      "title": "Supported structured data attributes and values - Google Merchant Center Help",
+      "url": "https://support.google.com/merchants/answer/6386198?hl=en",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_2"
+    },
+    {
+      "title": "Variant option [variant_option] - Google Merchant Center Help",
+      "url": "https://support.google.com/merchants/answer/17085214",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_2"
+    },
+    {
+      "title": "Product data specification - Manufacturer Center Help",
+      "url": "https://support.google.com/manufacturers/answer/6124116?hl=en",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_2"
+    },
+    {
+      "title": "2024 Merchant Center product data specification update - Google Merchant Center Help",
+      "url": "https://support.google.com/merchants/answer/14784710?hl=en",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_2"
+    },
+    {
+      "title": "Desempenho da Indústria Gráfica no 1º Quadrimestre",
+      "url": "https://agentecontafio.com.br/desempenho-da-industria-grafica-no-1o-quadrimestre/",
+      "exaPublicationMetadataUnverified": "2026-08-04T20:27:28.000Z",
+      "search": "mercado_4"
+    },
+    {
+      "title": "ADESIVO PARA VITRINE PERSONALIZADO",
+      "url": "https://www.mundoperfil.com.br/adesivo-para-vitrine-m2-sob-medida",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_4"
+    },
+    {
+      "title": "Adesivo Para Vitrine | FuturaIM",
+      "url": "https://www.futuraim.com.br/produto/adesivo-para-vitrine",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_4"
+    },
+    {
+      "title": "ADESIVO PARA FUNDO DE VITRINE PERSONALIZADO",
+      "url": "https://www.mundoperfil.com.br/adesivo-para-fundo-de-vitrine-background",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_4"
+    },
+    {
+      "title": "Adesivo para Vitrine Faixa | Atual Card Gráfica Online",
+      "url": "https://www.atualcard.com.br/adesivo-faixa/1/7816",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_4"
+    },
+    {
+      "title": "Adesivo Vinil Personalizado - Printstudio",
+      "url": "https://www.loja.printstudio.com.br/produto/adesivo-vinil-tamanho-personalizado",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "concorrentes_4"
+    },
+    {
+      "title": "Product Page UX: Provide at Least One 'In Scale' Image – Baymard",
+      "url": "https://baymard.com/research-articles/in-scale-product-images",
+      "exaPublicationMetadataUnverified": "2017-05-30T05:17:00.000Z",
+      "search": "conversao_3"
+    },
+    {
+      "title": "Product Page UX Best Practices 2026 – Baymard Institute",
+      "url": "https://baymard.com/research-articles/current-state-ecommerce-product-page-ux",
+      "exaPublicationMetadataUnverified": "2023-10-24T09:15:00.000Z",
+      "search": "conversao_3"
+    },
+    {
+      "title": "Ensure Sufficient Image Resolution and Zoom – Baymard",
+      "url": "https://baymard.com/research-articles/ensure-sufficient-image-resolution-and-zoom",
+      "exaPublicationMetadataUnverified": "2020-04-02T04:00:00.000Z",
+      "search": "conversao_3"
+    },
+    {
+      "title": "UX: 7 Types of Product Images – Baymard Institute",
+      "url": "https://baymard.com/research-articles/ux-product-image-categories",
+      "exaPublicationMetadataUnverified": "2012-03-06T07:50:00.000Z",
+      "search": "conversao_3"
+    },
+    {
+      "title": "E-Commerce Homepage & Category Navigation – Baymard",
+      "url": "https://baymard.com/research/homepage-and-category-usability",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_3"
+    },
+    {
+      "title": "Product Details Page UX Research Studies – Baymard",
+      "url": "https://baymard.com/research/product-page",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_3"
+    },
+    {
+      "title": "Use Keyword Planner - Google Ads Help",
+      "url": "https://support.google.com/google-ads/answer/7337243",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_4"
+    },
+    {
+      "title": "About Keyword Planner forecasts - Google Ads Help",
+      "url": "https://support.google.com/google-ads/answer/3022575?hl=en",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_4"
+    },
+    {
+      "title": "Conversion Values Best Practices - Google Ads Help",
+      "url": "https://support.google.com/google-ads/answer/14791574?hl=en",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_4"
+    },
+    {
+      "title": "How to estimate conversion value - Google Ads Help",
+      "url": "https://support.google.com/google-ads/answer/2796446?hl=en",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_4"
+    },
+    {
+      "title": "Research Keywords for Campaigns with Keyword Planner – Google Ads",
+      "url": "https://business.google.com/en-all/ad-tools/keyword-planner/",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_4"
+    },
+    {
+      "title": "Refine your new keywords in Keyword Planner - Google Ads Help",
+      "url": "https://support.google.com/google-ads/answer/6325025?hl=en",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "conversao_4"
+    },
+    {
+      "title": "Make “Guest Checkout” Prominent – Baymard Institute",
+      "url": "https://baymard.com/research-articles/make-guest-checkout-prominent",
+      "exaPublicationMetadataUnverified": "2023-01-17T11:45:00.000Z",
+      "search": "funil_1"
+    },
+    {
+      "title": "Mobile E-Commerce Usability Guidelines – Baymard",
+      "url": "https://baymard.com/research/mcommerce-usability",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_1"
+    },
+    {
+      "title": "Checkout Optimization: Minimize Form Fields – Baymard",
+      "url": "https://baymard.com/research-articles/checkout-flow-average-form-fields",
+      "exaPublicationMetadataUnverified": "2024-06-26T07:40:00.000Z",
+      "search": "funil_1"
+    },
+    {
+      "title": "How to Audit Your Checkout Flow for Hidden Friction – Baymard",
+      "url": "https://baymard.com/learn/audit-checkout-flow-hidden-friction",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_1"
+    },
+    {
+      "title": "Documentación - Mercado Pago Developers",
+      "url": "https://docs02.mercadopago.com.br/developers/pt/docs/checkout-pro/payment-notifications",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_2"
+    },
+    {
+      "title": "Documentación - Mercado Pago Developers",
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-bricks/additional-content/your-integrations/notifications",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_2"
+    },
+    {
+      "title": "Integração para aplicações móveis - Etapas de integração - Mercado Pago Developers",
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-pro/integrate-checkout-pro/mobile",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_2"
+    },
+    {
+      "title": "Query results",
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-api-payments/response-handling/query-results.md",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_2"
+    },
+    {
+      "title": "Notificações - Suas integrações - Mercado Pago Developers",
+      "url": "https://docs02.mercadopago.com.br/developers/pt/docs/your-integrations/notifications",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_2"
+    },
+    {
+      "title": "Documentación - Mercado Pago Developers",
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-api-orders/payment-management/improve-payment-approval/recommendations",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_3"
+    },
+    {
+      "title": "Documentación - Mercado Pago Developers",
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-pro/how-tos/improve-payment-approval/recommendations",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_3"
+    },
+    {
+      "title": "Por que um pagamento é rejeitado? - Melhorar a aprovação dos pagamentos - Mercado Pago Developers",
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-api-v2/payment-management/improve-payment-approval/reasons-for-rejection",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_3"
+    },
+    {
+      "title": "Documentación - Mercado Pago Developers",
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/woocommerce/how-tos/improve-payment-approval/recommendations",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_3"
+    },
+    {
+      "title": "Documentación - Mercado Pago Developers",
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/iset/how-tos/payment-approval",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_3"
+    },
+    {
+      "title": "2024 E-Commerce Checkout: Expanded and Updated Checkout Research Findings – Baymard",
+      "url": "https://baymard.com/blog/checkout-2024-launch",
+      "exaPublicationMetadataUnverified": "2024-03-13T08:15:00.000Z",
+      "search": "funil_4"
+    },
+    {
+      "title": "2024 E-Commerce Checkout: Expanded and Updated Checkout Research Findings – Baymard",
+      "url": "https://baymard.com/research-articles/checkout-2024-launch",
+      "exaPublicationMetadataUnverified": "2024-03-13T08:15:00.000Z",
+      "search": "funil_4"
+    },
+    {
+      "title": "Checkout UX Best Practices 2025 – Baymard Institute",
+      "url": "https://baymard.com/research-articles/current-state-of-checkout-ux",
+      "exaPublicationMetadataUnverified": "2024-11-13T11:45:00.000Z",
+      "search": "funil_4"
+    },
+    {
+      "title": "Payment UX: Research-Backed Standards for Ecommerce Checkouts – Baymard",
+      "url": "https://baymard.com/learn/payment-ux",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_4"
+    },
+    {
+      "title": "Visão geral - Mercado Pago Developers",
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-bricks/overview",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_5"
+    },
+    {
+      "title": "Pix - Integrar meios de pagamento - Mercado Pago Developers",
+      "url": "https://omega.mercadopago.com.br/developers/pt/docs/checkout-api-orders/payment-integration/pix",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_5"
+    },
+    {
+      "title": "Pix - Mercado Pago Developers",
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-api-payments/integration-configuration/integrate-pix",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_5"
+    },
+    {
+      "title": "Default rendering",
+      "url": "https://www.mercadopago.com.br/developers/pt/docs/checkout-bricks/payment-brick/default-rendering.md",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_5"
+    },
+    {
+      "title": "Visão geral - Checkout Bricks - Mercado Pago Developers",
+      "url": "https://omega.mercadopago.com.br/developers/pt/docs/checkout-bricks/landing",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_5"
+    },
+    {
+      "title": "Documentación - Mercado Pago Developers",
+      "url": "https://docs02.mercadopago.com.br/developers/pt/docs/checkout-pro/overview",
+      "exaPublicationMetadataUnverified": "N/A",
+      "search": "funil_5"
+    }
+  ]
+}
+

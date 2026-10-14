@@ -4,6 +4,11 @@ const store = window.CVT_STORE;
 const editLineId = new URLSearchParams(window.location.search).get('line');
 const editedItem = store.readCart().find(item => item.id === 'cartoes' && item.lineId === editLineId);
 let cardPriceSequence = 0;
+let cardPriceTimer;
+let saving = false;
+const checkingFiles = { front:false, back:false };
+const inspectionSequence = { front:0, back:0 };
+const draftKey = `cvt-card-draft-${editLineId || 'new'}`;
 const labels = {
   paper:{ 'couche-fosco-300':'Couché fosco 300 g/m²', 'couche-brilho-300':'Couché brilho 300 g/m²', reciclado:'Reciclado', outro:'Outro papel' },
   finish:{ sem:'Sem acabamento adicional', 'laminacao-fosca':'Laminação fosca', 'laminacao-brilho':'Laminação brilho', 'soft-touch':'Soft touch', 'verniz-localizado':'Verniz localizado', outro:'Outro acabamento' }
@@ -12,6 +17,33 @@ const files = { front:null, back:null };
 const fileChecks = { front:null, back:null };
 const previewUrls = { front:null, back:null };
 let previousConfig = editedItem?.configuration || null;
+
+function updateSaveState() {
+  const inspecting = checked('artworkMode') === 'ready' && (checkingFiles.front || (checked('sides') === 'both' && checkingFiles.back));
+  $('#cardForm button[type="submit"]').disabled = saving || inspecting;
+}
+function persistDraft() {
+  const fields = {};
+  for (const input of $('#cardForm').querySelectorAll('input:not([type=file]),select,textarea')) {
+    if (input.type === 'radio') { if (input.checked) fields[input.name] = input.value; }
+    else if (input.id) fields[input.id] = input.value;
+  }
+  const artwork = {};
+  for (const side of ['front','back']) if (files[side]) artwork[side] = { name:files[side].name };
+  try { sessionStorage.setItem(draftKey, JSON.stringify({ fields, artwork })); }
+  catch { $('#cardFormStatus').textContent = 'Não foi possível preservar o rascunho neste navegador. Confira o armazenamento antes de continuar.'; }
+}
+function restoreDraft() {
+  try {
+    const draft = JSON.parse(sessionStorage.getItem(draftKey) || 'null');
+    if (!draft?.fields || typeof draft.fields !== 'object') return;
+    for (const input of $('#cardForm').querySelectorAll('input:not([type=file]),select,textarea')) {
+      if (input.type === 'radio') { if (draft.fields[input.name] === input.value) input.checked = true; }
+      else if (input.id && typeof draft.fields[input.id] === 'string') input.value = draft.fields[input.id];
+    }
+    previousConfig = { ...previousConfig, artwork:{ ...previousConfig?.artwork, ...draft.artwork } };
+  } catch { /* configuração salva no carrinho permanece disponível */ }
+}
 
 function checked(name) { return $(`input[name="${name}"]:checked`)?.value; }
 function sizeMm() {
@@ -40,6 +72,7 @@ function renderFileStatus(side) {
   const status = $(`#${side}Status`);
   status.className = '';
   const check = fileChecks[side];
+  if (checkingFiles[side]) { status.textContent = 'Conferindo arquivo...'; return; }
   if (!check) {
     const old = previousConfig?.artwork?.[side];
     status.textContent = old?.fileId ? `Arte enviada: ${old.name}. A conferência técnica ainda é necessária.` : old?.name ? `Arte anterior: ${old.name}. Selecione novamente para conferir; o arquivo não foi enviado.` : 'Nenhum arquivo selecionado.';
@@ -68,32 +101,41 @@ function clearPreviewUrl(side) {
 async function inspectFile(side) {
   const input = $(`#${side}File`);
   const file = input.files?.[0] || null;
+  const sequence = ++inspectionSequence[side];
   files[side] = file;
   clearPreviewUrl(side);
   fileChecks[side] = null;
-  if (!file) { renderFileStatus(side); renderPreview(); return; }
-  const extension = file.name.split('.').pop()?.toLowerCase();
-  if (!['pdf','png','jpg','jpeg'].includes(extension)) {
-    fileChecks[side] = { error:'Formato não aceito. Use PDF, PNG ou JPG.' };
-    renderFileStatus(side); renderPreview(); return;
-  }
-  if (file.size > 25 * 1024 * 1024) {
-    fileChecks[side] = { error:'Arquivo acima de 25 MB. Envie uma versão menor para a conferência inicial.' };
-    renderFileStatus(side); renderPreview(); return;
-  }
-  if (extension === 'pdf') {
-    fileChecks[side] = { kind:'pdf', name:file.name, bytes:file.size };
-    renderFileStatus(side); renderPreview(); return;
-  }
+  checkingFiles[side] = Boolean(file);
+  renderFileStatus(side);
+  updateSaveState();
+  if (!file) { persistDraft(); renderPreview(); return; }
   try {
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    if (!['pdf','png','jpg','jpeg'].includes(extension)) throw { userMessage:'Formato não aceito. Use PDF, PNG ou JPG.' };
+    if (file.size > 25 * 1024 * 1024) throw { userMessage:'Arquivo acima de 25 MB. Envie uma versão menor para a conferência inicial.' };
+    if (extension === 'pdf') {
+      const header = new TextDecoder().decode(await file.slice(0,1024).arrayBuffer());
+      if (sequence !== inspectionSequence[side]) return;
+      if (!header.includes('%PDF-')) throw { userMessage:'Não foi possível abrir este PDF. Salve o arquivo novamente em PDF.' };
+      fileChecks[side] = { kind:'pdf', name:file.name, bytes:file.size };
+      return;
+    }
     const bitmap = await createImageBitmap(file);
-    if (files[side] !== file) { bitmap.close(); return; }
+    if (sequence !== inspectionSequence[side]) { bitmap.close(); return; }
     fileChecks[side] = { kind:'image', name:file.name, bytes:file.size, width:bitmap.width, height:bitmap.height };
     bitmap.close();
     previewUrls[side] = URL.createObjectURL(file);
-  } catch { fileChecks[side] = { error:'Não foi possível abrir esta imagem. Salve-a novamente em JPG ou PNG.' }; }
-  renderFileStatus(side);
-  renderPreview();
+  } catch (error) {
+    if (sequence === inspectionSequence[side]) fileChecks[side] = { error:error.userMessage || 'Não foi possível abrir esta imagem. Salve-a novamente em JPG ou PNG.' };
+  } finally {
+    if (sequence === inspectionSequence[side]) {
+      checkingFiles[side] = false;
+      renderFileStatus(side);
+      renderPreview();
+      persistDraft();
+      updateSaveState();
+    }
+  }
 }
 
 function renderPreview() {
@@ -137,6 +179,7 @@ function renderPreview() {
     pdf.hidden = !showPlaceholder;
     pdf.textContent = fileChecks[side]?.kind === 'pdf' ? `PDF ${side === 'front' ? 'da frente' : 'do verso'} selecionado` : `Selecione a arte ${side === 'front' ? 'da frente' : 'do verso'}`;
     if (showImage) image.src = previewUrls[side];
+    else image.removeAttribute('src');
   }
   const ref = sizeMm();
   const specs = [
@@ -168,6 +211,7 @@ function renderConditionalFields() {
   renderFileStatus('front');
   renderFileStatus('back');
   renderMode();
+  updateSaveState();
 }
 
 function downloadTemplate() {
@@ -218,8 +262,10 @@ function buildConfig() {
 
 async function saveConfiguration(event) {
   event.preventDefault();
+  if (saving) return;
   const status = $('#cardFormStatus');
   status.textContent = '';
+  if (checked('artworkMode') === 'ready' && (checkingFiles.front || (checked('sides') === 'both' && checkingFiles.back))) { status.textContent = 'Aguarde a conferência do arquivo antes de continuar.'; return; }
   if (!sizeMm()) { status.textContent = 'Informe um tamanho válido entre 40 e 120 mm em cada lado.'; $('#customWidth').focus(); return; }
   if (!Number.isInteger(selectedRun()) || selectedRun() < 50 || selectedRun() > 10000) { status.textContent = 'Informe uma tiragem entre 50 e 10.000 cartões.'; $('#customRun').focus(); return; }
   if (checked('artworkMode') === 'design' && !$('#brandName').value.trim() && !$('#personName').value.trim()) { status.textContent = 'Informe ao menos o nome da marca ou o nome que aparecerá no cartão.'; $('#brandName').focus(); return; }
@@ -227,6 +273,8 @@ async function saveConfiguration(event) {
   if ((fileChecks.front?.error || (checked('sides') === 'both' && fileChecks.back?.error)) && checked('artworkMode') === 'ready') { status.textContent = 'Corrija ou remova o arquivo inválido antes de continuar.'; return; }
   const configuration = buildConfig();
   const button = $('#cardForm button[type="submit"]');
+  saving = true;
+  button.disabled = true;
   if (checked('artworkMode') === 'ready' && typeof window.CVT_ARTWORK?.upload === 'function') {
     button.disabled = true;
     status.textContent = 'Enviando os arquivos selecionados...';
@@ -237,11 +285,18 @@ async function saveConfiguration(event) {
         if (!result?.fileId) throw new Error('Envio sem confirmação.');
         configuration.artwork[side].fileId = result.fileId;
       }
-    } catch { status.textContent = 'Não foi possível enviar a arte. Tente novamente antes de continuar.'; button.disabled = false; return; }
-    button.disabled = false;
+    } catch { status.textContent = 'Não foi possível enviar a arte. Tente novamente antes de continuar.'; saving = false; updateSaveState(); return; }
   }
-  sessionStorage.setItem('cvt-card-config', JSON.stringify(configuration));
-  store.addConfigured('cartoes', configuration, editedItem?.quantity || 1, editedItem?.lineId);
+  try {
+    sessionStorage.setItem('cvt-card-config', JSON.stringify(configuration));
+    store.addConfigured('cartoes', configuration, editedItem?.quantity || 1, editedItem?.lineId);
+    sessionStorage.removeItem(draftKey);
+  } catch {
+    status.textContent = 'Não foi possível salvar o carrinho neste navegador. Confira o armazenamento e tente novamente.';
+    saving = false;
+    updateSaveState();
+    return;
+  }
   window.location.href = '/checkout.html';
 }
 
@@ -259,7 +314,8 @@ async function updateCardPrice() {
 $('#cardForm').addEventListener('change', event => {
   if (event.target.matches('input[type=file]')) return;
   renderConditionalFields();
-  updateCardPrice();
+  persistDraft();
+  scheduleCardPrice();
 });
 $('#cardForm').addEventListener('input', event => {
   if (event.target.matches('input[type=file]')) return;
@@ -267,7 +323,8 @@ $('#cardForm').addEventListener('input', event => {
   renderFileStatus('front');
   renderFileStatus('back');
   renderPreview();
-  updateCardPrice();
+  persistDraft();
+  scheduleCardPrice();
 });
 $('#frontFile').addEventListener('change', () => inspectFile('front'));
 $('#backFile').addEventListener('change', () => inspectFile('back'));
@@ -275,6 +332,14 @@ $('#downloadTemplate').addEventListener('click', downloadTemplate);
 $('#cardForm').addEventListener('submit', saveConfiguration);
 $('#year').textContent = new Date().getFullYear();
 restorePrevious();
+restoreDraft();
 renderConditionalFields();
 updateCardPrice();
 if (typeof window.CVT_ARTWORK?.upload === 'function') $('.artwork-disclosure').textContent = 'Os arquivos selecionados serão enviados ao salvar a personalização. A conferência de resolução é inicial; corte, cores, fontes e sangria ainda precisam de aprovação técnica antes da produção.';
+
+function scheduleCardPrice() {
+  clearTimeout(cardPriceTimer);
+  ++cardPriceSequence;
+  $('#cardPrice').textContent = 'Conferindo preço…';
+  cardPriceTimer = setTimeout(updateCardPrice, 180);
+}

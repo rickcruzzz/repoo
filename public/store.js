@@ -95,13 +95,16 @@ window.CVT_STORE = (() => {
   }
   async function price(item) {
     if (!validConfiguration(item.id, item.configuration)) return { status:'invalid', message:'Complete a personalização para conferir o preço.' };
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
     try {
-      const response = await fetch('/api/price', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ productId:item.id, quantity:item.quantity, configuration:item.configuration }) });
+      const response = await fetch('/api/price', { method:'POST', headers:{ 'Content-Type':'application/json' }, signal:controller.signal, body:JSON.stringify({ productId:item.id, quantity:item.quantity, configuration:item.configuration }) });
       if (!response.ok) return { status:'unavailable', message:'Não foi possível conferir o preço. Tente novamente.' };
       const result = await response.json();
       if (result.status === 'available' && Number.isSafeInteger(result.totalCents) && result.totalCents > 0 && result.currency === 'BRL') return result;
       return { status:'unavailable', message:'Preço indisponível para esta configuração. Compra temporariamente indisponível.' };
     } catch { return { status:'unavailable', message:'Não foi possível conferir o preço. Tente novamente.' }; }
+    finally { clearTimeout(timeout); }
   }
   const priceText = quote => quote?.status === 'available' ? `${money(quote.totalCents)} · total do item` : quote?.message || 'Conferindo preço…';
   const editUrl = item => item.id === 'cartoes' ? `/cartao-de-visita.html?line=${encodeURIComponent(item.lineId)}` : `/#produto=${encodeURIComponent(item.id)}&line=${encodeURIComponent(item.lineId)}`;
