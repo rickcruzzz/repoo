@@ -6,9 +6,9 @@
 .faq-list details { border-bottom:1px solid var(--line); }
 .faq-list summary { display:flex; align-items:center; justify-content:space-between; gap:20px; cursor:pointer; list-style:none; padding:21px 0; font-weight:700; font-size:14px; line-height:1.5; }
 .faq-list summary::-webkit-details-marker { display:none; }
-.faq-list summary:after { content:'+'; color:#205eb2; font-size:24px; font-weight:400; line-height:1; }
+.faq-list summary:after { content:'+'; color:var(--ink); font-size:24px; font-weight:400; line-height:1; }
 .faq-list details[open] summary:after { content:'−'; }
-.faq-list p { color:#526980; font-size:12px; line-height:1.8; margin:0 25px 22px 0; max-width:680px; }
+.faq-list p { color:var(--muted); font-size:12px; line-height:1.8; margin:0 25px 22px 0; max-width:680px; }
 @media(max-width:700px) {
   .faq-layout { display:block; }
   .faq-intro { margin-bottom:28px; }

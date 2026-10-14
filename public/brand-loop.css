@@ -36,7 +36,7 @@
 
 /* One horizontal line, including the no-JavaScript fallback. */
 .brand-loop__viewport { overflow-x: auto; overflow-y: hidden; }
-.brand-loop__viewport:focus-visible { outline: 2px solid var(--orange); outline-offset: -2px; }
+.brand-loop__viewport:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
 .brand-loop__track { display: flex; width: max-content; }
 .brand-loop__group {
   display: flex;
