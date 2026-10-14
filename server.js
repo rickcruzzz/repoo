@@ -2,6 +2,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.join(root, 'public');
@@ -35,6 +36,24 @@ const json = (res, status, data) => {
   res.end(JSON.stringify(data));
 };
 
+// Exact commercial offers only: no inferred area rates, multipliers or sample prices.
+const productIds = new Set(['fachada','adesivo','cartoes','luminoso','impressao','sinalizacao']);
+function priceBook() {
+  try {
+    const data = fs.readFileSync(path.join(root, 'commerce.json'), 'utf8');
+    return { ...JSON.parse(data), version:createHash('sha256').update(data).digest('hex') };
+  } catch { return { currency:'BRL', products:{} }; }
+}
+function resolvePrice(payload) {
+  const book = priceBook();
+  const product = book.products?.[payload.productId];
+  if (book.currency !== 'BRL' || !product || !Array.isArray(product.fields) || !Array.isArray(product.offers)) return { status:'unavailable' };
+  if (!product.fields.length || new Set(product.fields).size !== product.fields.length || !product.fields.every(field => typeof field === 'string' && field.length > 0)) return { status:'unavailable' };
+  const matches = product.offers.filter(offer => offer.quantity === payload.quantity && offer.configuration && Object.keys(offer.configuration).length === product.fields.length && product.fields.every(field => Object.hasOwn(offer.configuration, field) && Object.hasOwn(payload.configuration, field) && offer.configuration[field] === payload.configuration[field]));
+  if (matches.length !== 1 || !Number.isSafeInteger(matches[0].totalCents) || matches[0].totalCents <= 0) return { status:'unavailable' };
+  return { status:'available', currency:'BRL', totalCents:matches[0].totalCents, priceVersion:book.version };
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url || '/', 'http://localhost');
   const current = settings();
@@ -44,6 +63,20 @@ const server = http.createServer(async (req, res) => {
       email: current.email,
       photosEnabled: Boolean(current.pexels)
     });
+  }
+  if (url.pathname === '/api/price') {
+    if (req.method !== 'POST') return json(res, 405, { error:'Método não permitido' });
+    if (!req.headers['content-type']?.startsWith('application/json')) return json(res, 415, { error:'Envie JSON' });
+    let body = '';
+    try {
+      for await (const chunk of req) {
+        body += chunk.toString();
+        if (Buffer.byteLength(body) > 32768) return json(res, 413, { error:'Configuração muito grande' });
+      }
+      const payload = JSON.parse(body);
+      if (!payload || !productIds.has(payload.productId) || !Number.isInteger(payload.quantity) || payload.quantity < 1 || payload.quantity > 99 || !payload.configuration || typeof payload.configuration !== 'object' || Array.isArray(payload.configuration)) return json(res, 400, { error:'Configuração inválida' });
+      return json(res, 200, resolvePrice(payload));
+    } catch { return json(res, 400, { error:'Configuração inválida' }); }
   }
   if (url.pathname === '/api/photos') {
     if (!current.pexels) return json(res, 503, { error: 'PEXELS_API_KEY não configurada' });

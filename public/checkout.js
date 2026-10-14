@@ -1,53 +1,38 @@
 const products = window.CVT_PRODUCTS;
+const store = window.CVT_STORE;
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
 const productById = new Map(products.map(product => [product.id, product]));
 const paymentNames = { pix:'Pix', card:'Cartão de crédito', boleto:'Boleto bancário' };
-let cart = [];
+let cart = store.readCart();
+const quotes = new Map();
+let priceSequence = 0;
+let submitting = false;
 const itemBriefs = {};
-let cardConfig = null;
 let step = 0;
 let paymentMethod = 'pix';
 let config = { whatsapp:'', email:'' };
 let cepTimer;
 let lastLookedUpCep = '';
 
-try {
-  const stored = JSON.parse(localStorage.getItem('cvt-cart') || '[]');
-  if (Array.isArray(stored)) {
-    const quantities = new Map();
-    for (const item of stored) {
-      if (!productById.has(item.id)) continue;
-      quantities.set(item.id, Math.min(99, (quantities.get(item.id) || 0) + Math.max(1, Number.parseInt(item.quantity, 10) || 1)));
-    }
-    cart = [...quantities].map(([id, quantity]) => ({ id, quantity }));
-  }
-} catch { cart = []; }
-try { cardConfig = JSON.parse(sessionStorage.getItem('cvt-card-config') || 'null'); } catch { cardConfig = null; }
 try { Object.assign(itemBriefs, JSON.parse(sessionStorage.getItem('cvt-item-briefs') || '{}')); } catch { /* campos podem ser preenchidos novamente */ }
-
-function cardDescription() {
-  if (!cardConfig) return 'Personalização pendente';
-  const paper = { 'couche-fosco-300':'couché fosco 300 g/m²', 'couche-brilho-300':'couché brilho 300 g/m²', reciclado:'papel reciclado', outro:'outro papel' }[cardConfig.paper] || 'papel a definir';
-  const finish = { sem:'sem acabamento adicional', 'laminacao-fosca':'laminação fosca', 'laminacao-brilho':'laminação brilho', 'soft-touch':'soft touch', 'verniz-localizado':'verniz localizado', outro:'outro acabamento' }[cardConfig.finish] || 'acabamento a definir';
-  const sides = cardConfig.sides === 'both' ? 'frente e verso' : 'só frente';
-  return `${cardConfig.runQuantity} cartões · ${cardConfig.trimWidthMm} × ${cardConfig.trimHeightMm} mm · ${sides} · ${paper} · ${finish} · cantos ${cardConfig.corners || 'retos'}`;
-}
+for (const item of cart) if (!itemBriefs[item.lineId] && itemBriefs[item.id]) itemBriefs[item.lineId] = itemBriefs[item.id];
 
 function saveCart() {
-  localStorage.setItem('cvt-cart', JSON.stringify(cart));
+  store.writeCart(cart);
   renderCart();
   renderSummary();
+  refreshPrices();
 }
 
 function renderCart() {
   const target = $('#checkoutCart');
   target.replaceChildren();
-  $('#toAddress').disabled = cart.length === 0 || (cart.some(item => item.id === 'cartoes') && !cardConfig);
+  $('#toAddress').disabled = cart.length === 0 || cart.some(item => !store.validConfiguration(item.id, item.configuration));
   if (!cart.length) {
     const empty = document.createElement('div');
     empty.className = 'empty-cart';
-    empty.innerHTML = '<h3>Seu carrinho está vazio.</h3><p>Encontre uma solução para começar seu projeto.</p><a class="button button-dark" href="/#solucoes">Explorar soluções →</a>';
+    empty.innerHTML = '<h3>Seu carrinho está vazio.</h3><p>Escolha um produto e personalize para começar.</p><a class="button button-dark" href="/#solucoes">Explorar produtos →</a>';
     target.append(empty);
     return;
   }
@@ -56,14 +41,20 @@ function renderCart() {
     const row = document.createElement('article');
     row.className = 'checkout-cart-item';
     if (product.id === 'cartoes') {
-      row.innerHTML = `<img src="${product.image}" alt=""><div><span class="item-category">${product.category}</span><h3>${product.name}</h3><p class="item-meta"></p><a class="item-customize-link" href="/cartao-de-visita.html">${cardConfig ? 'Editar personalização' : 'Personalizar cartão para continuar'} ↗</a><p class="item-file-note"></p></div><button type="button" class="remove-item" data-remove="${product.id}" aria-label="Remover ${product.name}">Remover</button>`;
-      row.querySelector('.item-meta').textContent = cardDescription();
-      row.querySelector('.item-file-note').textContent = cardConfig?.artworkMode === 'ready' ? 'Arquivos escolhidos foram conferidos apenas neste navegador; envie a arte ao atendimento após o contato.' : 'Criação ou adaptação da arte será incluída na análise do orçamento.';
+      row.innerHTML = `<img src="${product.image}" alt=""><div><span class="item-category">${product.category}</span><h3>${product.name}</h3><p class="item-meta"></p><a class="item-customize-link" href="${store.editUrl(item)}">Editar personalização ↗</a><p class="item-file-note"></p><p data-price-line="${item.lineId}" class="item-meta" role="status"></p></div><button type="button" class="remove-item" data-remove="${item.lineId}" aria-label="Remover ${product.name}">Remover</button>`;
+      row.querySelector('.item-meta').textContent = store.summary(item);
+      const artwork = item.configuration?.artwork;
+      row.querySelector('.item-file-note').textContent = item.configuration?.artworkMode === 'ready'
+        ? (artwork?.front?.fileId && (item.configuration.sides !== 'both' || artwork?.back?.fileId) ? 'Arte enviada. A conferência técnica ainda é necessária.' : 'Selecionar uma arte no navegador não a envia à loja. O envio precisa estar disponível antes da compra.')
+        : 'A prévia é ilustrativa. Criação e adaptação dependem das condições da configuração.';
     } else {
-      row.innerHTML = `<img src="${product.image}" alt=""><div><span class="item-category">${product.category}</span><h3>${product.name}</h3><p class="item-meta">Informe o que souber para receber uma proposta mais precisa.</p><div class="quantity-picker"><button type="button" data-decrease="${product.id}" aria-label="Diminuir ${product.name}">−</button><output aria-label="Quantidade de ${product.name}">${item.quantity}</output><button type="button" data-increase="${product.id}" aria-label="Aumentar ${product.name}">+</button></div><div class="item-brief-grid"><label>Local ou superfície<input data-item-id="${product.id}" data-item-field="application" type="text" maxlength="100" placeholder="Ex.: fachada, vitrine, parede"></label><label>Medidas aproximadas<input data-item-id="${product.id}" data-item-field="measurements" type="text" maxlength="60" placeholder="Ex.: 200 × 80 cm"></label><label>Instalação<select data-item-id="${product.id}" data-item-field="installation"><option value="a-definir">A definir</option><option value="necessaria">Preciso de instalação</option><option value="nao-necessaria">Não preciso de instalação</option></select></label><label>Outros detalhes<input data-item-id="${product.id}" data-item-field="notes" type="text" maxlength="300" placeholder="Material, acabamento ou prazo"></label></div></div><button type="button" class="remove-item" data-remove="${product.id}" aria-label="Remover ${product.name}">Remover</button>`;
-      for (const input of row.querySelectorAll('[data-item-field]')) input.value = itemBriefs[item.id]?.[input.dataset.itemField] || (input.dataset.itemField === 'installation' ? 'a-definir' : '');
+      const installation = ['fachada','adesivo','luminoso','sinalizacao'].includes(item.id) ? `<label>Instalação<select data-item-id="${item.lineId}" data-item-field="installation"><option value="a-definir">A definir</option><option value="necessaria">Preciso de instalação</option><option value="nao-necessaria">Não preciso de instalação</option></select></label>` : '';
+      row.innerHTML = `<img src="${product.image}" alt=""><div><span class="item-category">${product.category}</span><h3>${product.name}</h3><p class="item-meta"></p><a class="item-customize-link" href="${store.editUrl(item)}">Editar personalização ↗</a><div class="quantity-picker"><button type="button" data-decrease="${item.lineId}" aria-label="Diminuir ${product.name}">−</button><output aria-label="Quantidade de ${product.name}">${item.quantity}</output><button type="button" data-increase="${item.lineId}" aria-label="Aumentar ${product.name}">+</button></div><div class="item-brief-grid">${store.fieldsHtml(product, item.configuration, `checkout-${item.lineId}-`, `data-line-id="${item.lineId}"`)}${installation}</div><p data-price-line="${item.lineId}" class="item-meta" role="status"></p></div><button type="button" class="remove-item" data-remove="${item.lineId}" aria-label="Remover ${product.name}">Remover</button>`;
+      row.querySelector('.item-meta').textContent = store.summary(item);
+      for (const input of row.querySelectorAll('[data-item-field]')) input.value = itemBriefs[item.lineId]?.[input.dataset.itemField] || 'a-definir';
     }
     target.append(row);
+    row.querySelector('[data-price-line]').textContent = store.priceText(quotes.get(item.lineId));
   }
 }
 
@@ -76,15 +67,34 @@ function renderSummary() {
     const name = document.createElement('span');
     name.textContent = productById.get(item.id).name;
     const quantity = document.createElement('strong');
-    quantity.textContent = item.id === 'cartoes' && cardConfig ? `${cardConfig.runQuantity} cartões` : `${item.quantity} un.`;
+    quantity.textContent = item.id === 'cartoes' && item.configuration ? `${item.configuration.runQuantity} cartões × ${item.quantity}` : `${item.quantity} un.`;
     row.append(name, quantity);
     target.append(row);
   }
   $('#summaryQty').textContent = cart.reduce((total, item) => total + item.quantity, 0);
+  const priced = cart.length > 0 && cart.every(item => quotes.get(item.lineId)?.status === 'available');
+  const total = priced ? cart.reduce((sum, item) => sum + quotes.get(item.lineId).totalCents, 0) : null;
+  $('#summaryProducts').textContent = total === null ? 'Preço indisponível' : store.money(total);
+  $('#summaryTotal').textContent = total === null ? 'Preço indisponível' : store.money(total);
+  updateFinishAvailability();
+}
+
+async function refreshPrices() {
+  const sequence = ++priceSequence;
+  quotes.clear();
+  renderSummary();
+  const results = await Promise.all(cart.map(async item => [item.lineId, await store.price(item)]));
+  if (sequence !== priceSequence) return;
+  for (const [lineId, quote] of results) {
+    quotes.set(lineId, quote);
+    const output = document.querySelector(`[data-price-line="${lineId}"]`);
+    if (output) output.textContent = store.priceText(quote);
+  }
+  renderSummary();
 }
 
 function changeQuantity(id, difference) {
-  const item = cart.find(entry => entry.id === id);
+  const item = cart.find(entry => entry.lineId === id);
   if (!item) return;
   item.quantity = Math.min(99, Math.max(1, item.quantity + difference));
   saveCart();
@@ -145,6 +155,7 @@ async function lookupCep() {
     $('#addressCity').value = data.localidade || $('#addressCity').value;
     $('#addressState').value = data.uf || $('#addressState').value;
     lastLookedUpCep = cep;
+    sessionStorage.setItem('cvt-address-draft', JSON.stringify(readAddress()));
     status.textContent = 'Endereço encontrado. Confira os dados e informe o número.';
     if (step === 1) $('#addressNumber').focus();
   } catch { status.textContent = 'Busca indisponível. Preencha o endereço manualmente.'; }
@@ -172,9 +183,9 @@ function readAddress() {
 function renderPaymentDetail() {
   $$('.payment-option').forEach(option => option.classList.toggle('active', option.querySelector('input').checked));
   const descriptions = {
-    pix:{ symbol:'◇', title:'Pix depois da aprovação', copy:'Quando o valor for confirmado, você receberá um QR Code ou código copia e cola válido para pagar com seu banco.' },
-    card:{ symbol:'▭', title:'Cartão em etapa segura', copy:'Após aprovar o valor, os dados do cartão serão informados em uma etapa segura. Nenhum número de cartão é solicitado aqui.' },
-    boleto:{ symbol:'▥', title:'Boleto após a confirmação', copy:'Você receberá o boleto e o vencimento quando o orçamento for aprovado e a cobrança for emitida.' }
+    pix:{ symbol:'◇', title:'Preferência por Pix', copy:'A disponibilidade do Pix é confirmada no pagamento. A loja ainda não emite código ou QR Code de cobrança.' },
+    card:{ symbol:'▭', title:'Preferência por cartão', copy:'Condições e disponibilidade são confirmadas no pagamento. Nenhum número de cartão é solicitado nesta página.' },
+    boleto:{ symbol:'▥', title:'Preferência por boleto', copy:'A emissão depende de um pagamento disponível. A loja ainda não emite boleto ou informa vencimento de cobrança.' }
   };
   const detail = descriptions[paymentMethod];
   $('#paymentDetail').innerHTML = `<div class="payment-detail-symbol" aria-hidden="true">${detail.symbol}</div><div><h3>${detail.title}</h3><p>${detail.copy}</p></div>`;
@@ -202,9 +213,9 @@ function renderReview() {
   const target = $('#reviewContent');
   target.replaceChildren();
   target.append(
-    reviewBlock('Soluções', cart.map(item => item.id === 'cartoes' ? `${productById.get(item.id).name} — ${cardDescription()}${cardConfig?.artworkMode === 'ready' ? '\nArte pronta: envio do arquivo ainda necessário.' : '\nArte: criação ou adaptação a avaliar.'}` : `${item.quantity} × ${productById.get(item.id).name}${briefText(itemBriefs[item.id]) ? ` — ${briefText(itemBriefs[item.id])}` : ''}`).join('\n') + ($('#projectDetails').value.trim() ? `\nProjeto: ${$('#projectDetails').value.trim()}` : ''), 0),
+    reviewBlock('Produtos personalizados', cart.map(item => `${item.quantity} × ${productById.get(item.id).name} — ${store.summary(item)}\n${store.priceText(quotes.get(item.lineId))}${briefText(itemBriefs[item.lineId]) ? `\n${briefText(itemBriefs[item.lineId])}` : ''}`).join('\n\n') + ($('#projectDetails').value.trim() ? `\nObservações: ${$('#projectDetails').value.trim()}` : ''), 0),
     reviewBlock('Contato e endereço', `${address.name}\n${address.email} · ${address.phone}\n${address.street}, ${address.number}${address.extra ? `, ${address.extra}` : ''}\n${address.district} · ${address.city}/${address.state} · CEP ${address.cep}`, 1),
-    reviewBlock('Pagamento preferido', `${paymentNames[paymentMethod]}\nO pagamento será disponibilizado após a aprovação do orçamento.`, 2)
+    reviewBlock('Preferência de pagamento', `${paymentNames[paymentMethod]}\nA disponibilidade e as condições precisam ser confirmadas na finalização.`, 2)
   );
 }
 
@@ -216,59 +227,80 @@ function briefText(brief) {
 function checkoutPayload() {
   const address = readAddress();
   return {
-    items:cart.map(item => ({ productId:item.id, quantity:item.quantity, brief:itemBriefs[item.id] || null, configuration:item.id === 'cartoes' ? cardConfig : null })),
+    items:cart.map(item => ({ productId:item.id, lineId:item.lineId, quantity:item.quantity, brief:itemBriefs[item.lineId] || null, configuration:item.configuration, priceVersion:quotes.get(item.lineId)?.priceVersion || null })),
     projectNotes:$('#projectDetails').value.trim(),
     customer:{ name:address.name, email:address.email, phone:digits(address.phone) },
     address:{ cep:digits(address.cep), street:address.street, number:address.number, complement:address.extra, district:address.district, city:address.city, state:address.state },
     paymentPreference:paymentMethod,
-    currency:'BRL', pricingStatus:'pending_quote'
+    currency:'BRL', pricingStatus:cart.every(item => quotes.get(item.lineId)?.status === 'available') ? 'priced' : 'unavailable'
   };
 }
 
 function updateFinishAvailability() {
-  const available = Boolean(window.CVT_CHECKOUT?.submit || config.whatsapp || config.email);
+  const priced = cart.length > 0 && cart.every(item => quotes.get(item.lineId)?.status === 'available');
+  const available = window.CVT_CHECKOUT?.supportsPurchase === true && typeof window.CVT_CHECKOUT?.submit === 'function';
+  const artworkReady = cart.every(item => item.id !== 'cartoes' || item.configuration?.artworkMode !== 'ready' || (item.configuration.artwork?.front?.fileId && (item.configuration.sides !== 'both' || item.configuration.artwork?.back?.fileId)));
   const consent = $('#reviewConsent').checked;
-  $('#finishCheckout').disabled = !available || !consent || !cart.length;
-  $('#finishStatus').textContent = available ? (consent ? 'Nenhuma cobrança será feita agora.' : 'Confirme os dados para enviar a solicitação.') : 'O envio do pedido ainda não está disponível.';
+  $('#finishCheckout').disabled = submitting || !priced || !available || !artworkReady || !consent || cart.some(item => !store.validConfiguration(item.id, item.configuration));
+  if (!submitting) $('#finishStatus').textContent = !priced ? 'Há produtos sem preço disponível. A compra não pode ser concluída.' : !available ? 'O pagamento online está temporariamente indisponível.' : !artworkReady ? 'Envie a arte pelo personalizador antes de continuar.' : !consent ? 'Confirme os dados antes de continuar para pagamento.' : 'Os valores e as condições serão conferidos novamente antes do pagamento.';
+  $('#contactAvailability').hidden = !(config.whatsapp || config.email || (window.CVT_CHECKOUT?.submit && !available));
 }
 
 function quoteMessage(payload) {
   const location = payload.address;
-  const cardBrief = cardConfig?.artworkMode === 'design' ? `\n  Arte: criar/adaptar. Marca: ${cardConfig.design?.brandName || 'a definir'}; nome: ${cardConfig.design?.personName || 'a definir'}; telefone: ${cardConfig.design?.printPhone || 'a definir'}; e-mail: ${cardConfig.design?.printEmail || 'a definir'}; site: ${cardConfig.design?.printWebsite || 'a definir'}.${cardConfig.design?.designNotes ? ` Observações: ${cardConfig.design.designNotes}` : ''}` : '\n  Tenho arte pronta e preciso enviá-la ao atendimento.';
-  return `Olá! Gostaria de solicitar um orçamento para:\n${payload.items.map(item => item.productId === 'cartoes' ? `• Cartões de visita — ${cardDescription()}${cardBrief}` : `• ${item.quantity} × ${productById.get(item.productId).name}${briefText(item.brief) ? ` — ${briefText(item.brief)}` : ''}`).join('\n')}\n\nContato: ${payload.customer.name} · ${payload.customer.email} · ${payload.customer.phone}\nEndereço: ${location.street}, ${location.number}${location.complement ? `, ${location.complement}` : ''}, ${location.district}, ${location.city}/${location.state}, CEP ${location.cep}\nPagamento preferido: ${paymentNames[payload.paymentPreference]}${payload.projectNotes ? `\nDetalhes: ${payload.projectNotes}` : ''}\n\nAguardando valor e condições antes de pagar.`;
+  return `Olá! Quero consultar a disponibilidade destas configurações:\n${payload.items.map(item => {
+    const description = store.summary({ id:item.productId, configuration:item.configuration });
+    const design = item.configuration?.design;
+    const artwork = item.productId === 'cartoes' && design ? `\n  Conteúdo da arte: ${JSON.stringify(design)}` : '';
+    return `• ${item.quantity} × ${productById.get(item.productId).name} — ${description}${briefText(item.brief) ? ` — ${briefText(item.brief)}` : ''}${artwork}`;
+  }).join('\n')}\n\nContato: ${payload.customer.name} · ${payload.customer.email} · ${payload.customer.phone}\nEndereço: ${location.street}, ${location.number}${location.complement ? `, ${location.complement}` : ''}, ${location.district}, ${location.city}/${location.state}, CEP ${location.cep}\nPreferência de pagamento: ${paymentNames[payload.paymentPreference]}${payload.projectNotes ? `\nDetalhes: ${payload.projectNotes}` : ''}\n\nEsta consulta não é uma compra concluída.`;
 }
 
 async function finishCheckout() {
-  if (!$('#reviewConsent').checked || !cart.length) return;
+  if ($('#finishCheckout').disabled || submitting || !$('#reviewConsent').checked || !cart.length) return;
   if (!validateAddress(false)) { setStep(1); validateAddress(); return; }
-  const payload = checkoutPayload();
   const status = $('#finishStatus');
   const button = $('#finishCheckout');
-  if (window.CVT_CHECKOUT?.submit) {
+  submitting = true;
+  try {
     button.disabled = true;
-    status.textContent = 'Enviando solicitação...';
-    try {
-      const result = await window.CVT_CHECKOUT.submit(payload);
-      if (!result?.orderId && result?.status !== 'accepted') throw new Error('Resposta sem confirmação do pedido.');
-      status.textContent = `Pedido recebido${result.orderId ? ` · ${result.orderId}` : ''}. Aguarde o orçamento antes de pagar.`;
-      localStorage.removeItem('cvt-cart');
-      for (const key of ['cvt-card-config','cvt-item-briefs','cvt-address-draft','cvt-project-notes']) sessionStorage.removeItem(key);
-      cart = [];
-      renderSummary();
-      if (result.redirectUrl) {
-        const destination = new URL(result.redirectUrl, window.location.href);
-        if (destination.protocol === 'https:' || destination.origin === window.location.origin) window.location.assign(destination.href);
-      }
-    } catch { status.textContent = 'Não foi possível enviar agora. Tente novamente.'; button.disabled = false; }
-    return;
+    status.textContent = 'Conferindo disponibilidade e preço…';
+    await refreshPrices();
+    if (!cart.every(item => quotes.get(item.lineId)?.status === 'available')) throw new Error('O preço de um produto ficou indisponível. Confira o carrinho.');
+    const payload = checkoutPayload();
+    const result = await window.CVT_CHECKOUT.submit(payload);
+    if (!result?.orderId || !result?.redirectUrl) throw new Error('O pagamento não foi confirmado. Seu carrinho foi mantido.');
+    const destination = new URL(result.redirectUrl, window.location.href);
+    if (destination.protocol !== 'https:' && destination.origin !== window.location.origin) throw new Error('Não foi possível abrir o pagamento. Seu carrinho foi mantido.');
+    // Keep the cart until the provider confirms payment; creating checkout is not payment.
+    status.textContent = 'Abrindo a etapa de pagamento…';
+    window.location.assign(destination.href);
+  } catch (error) {
+    submitting = false;
+    updateFinishAvailability();
+    status.textContent = error.message || 'Não foi possível continuar agora. Seu carrinho foi mantido.';
   }
+}
+
+async function contactAvailability(event) {
+  event.preventDefault();
+  if (!$('#reviewConsent').checked) { $('#finishStatus').textContent = 'Confirme os dados antes de consultar disponibilidade.'; $('#reviewConsent').focus(); return; }
+  if (!validateAddress(false)) { setStep(1); validateAddress(); return; }
+  const payload = checkoutPayload();
   const message = quoteMessage(payload);
+  const status = $('#finishStatus');
   if (config.whatsapp) {
     window.open(`https://wa.me/${config.whatsapp}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
-    status.textContent = 'Confira a nova aba e envie a mensagem para concluir a solicitação.';
+    status.textContent = 'Envie a mensagem na nova aba para consultar disponibilidade. Seu carrinho foi mantido.';
   } else if (config.email) {
-    window.location.href = `mailto:${config.email}?subject=${encodeURIComponent('Pedido para orçamento')}&body=${encodeURIComponent(message)}`;
-    status.textContent = 'E-mail preparado. Envie a mensagem para concluir a solicitação.';
+    window.location.href = `mailto:${config.email}?subject=${encodeURIComponent('Disponibilidade de produtos personalizados')}&body=${encodeURIComponent(message)}`;
+    status.textContent = 'E-mail preparado para consultar disponibilidade. Seu carrinho foi mantido.';
+  } else if (typeof window.CVT_CHECKOUT?.submit === 'function' && !window.CVT_CHECKOUT.supportsPurchase) {
+    try {
+      const result = await window.CVT_CHECKOUT.submit({ ...payload, requestType:'availability', pricingStatus:'pending_quote' });
+      if (!result?.orderId && result?.status !== 'accepted') throw new Error('Sem confirmação');
+      status.textContent = 'Consulta recebida pela loja. Isso não conclui uma compra; seu carrinho foi mantido.';
+    } catch { status.textContent = 'Não foi possível consultar agora. Seu carrinho foi mantido.'; }
   }
 }
 
@@ -277,16 +309,31 @@ $('#checkoutCart').addEventListener('click', event => {
   const increase = event.target.closest('[data-increase]');
   const decrease = event.target.closest('[data-decrease]');
   if (remove) {
-    cart = cart.filter(item => item.id !== remove.dataset.remove);
+    cart = cart.filter(item => item.lineId !== remove.dataset.remove);
     delete itemBriefs[remove.dataset.remove];
     sessionStorage.setItem('cvt-item-briefs', JSON.stringify(itemBriefs));
-    if (remove.dataset.remove === 'cartoes') { sessionStorage.removeItem('cvt-card-config'); cardConfig = null; }
+    if (!cart.some(item => item.id === 'cartoes')) sessionStorage.removeItem('cvt-card-config');
     saveCart();
   }
   else if (increase) changeQuantity(increase.dataset.increase, 1);
   else if (decrease) changeQuantity(decrease.dataset.decrease, -1);
 });
 function updateBrief(event) {
+  const field = event.target.closest('[data-config-field]');
+  if (field) {
+    const item = cart.find(item => item.lineId === field.dataset.lineId);
+    if (!item) return;
+    const productField = productById.get(item.id).configurationFields.find(entry => entry.key === field.dataset.configField);
+    item.configuration ||= {};
+    item.configuration[field.dataset.configField] = productField.type === 'number' ? (field.value ? Number(field.value) : null) : field.value.trim();
+    store.writeCart(cart);
+    $('#toAddress').disabled = cart.some(item => !store.validConfiguration(item.id, item.configuration));
+    const row = field.closest('.checkout-cart-item');
+    row.querySelector('.item-meta').textContent = store.summary(item);
+    row.querySelector('[data-price-line]').textContent = 'Conferindo preço…';
+    refreshPrices();
+    return;
+  }
   const target = event.target.closest('[data-item-field]');
   if (!target) return;
   const id = target.dataset.itemId;
@@ -315,6 +362,7 @@ $('#addressState').addEventListener('input', event => { event.target.value = eve
 $('#addressForm').addEventListener('input', () => sessionStorage.setItem('cvt-address-draft', JSON.stringify(readAddress())));
 $('#reviewConsent').addEventListener('change', updateFinishAvailability);
 $('#finishCheckout').addEventListener('click', finishCheckout);
+$('#contactAvailability').addEventListener('click', contactAvailability);
 $('#projectDetails').value = sessionStorage.getItem('cvt-project-notes') || '';
 try {
   const savedAddress = JSON.parse(sessionStorage.getItem('cvt-address-draft') || 'null');
@@ -328,6 +376,8 @@ $('#projectDetails').addEventListener('input', event => sessionStorage.setItem('
 $('#year').textContent = new Date().getFullYear();
 renderCart();
 renderSummary();
+store.writeCart(cart);
+refreshPrices();
 renderPaymentDetail();
 updateFinishAvailability();
 fetch('/api/config').then(response => response.ok ? response.json() : {}).then(value => { config = value; updateFinishAvailability(); }).catch(() => updateFinishAvailability());

@@ -1,4 +1,5 @@
 const products = window.CVT_PRODUCTS;
+const store = window.CVT_STORE;
 
 const $ = (selector) => document.querySelector(selector);
 const grid = $('#productGrid');
@@ -10,15 +11,11 @@ let activeFilter = 'Todos';
 let searchTerm = '';
 let lastFocus = null;
 let config = { whatsapp:'', email:'', photosEnabled:false };
-let cart = [];
-try {
-  const stored = JSON.parse(localStorage.getItem('cvt-cart') || 'null');
-  const source = Array.isArray(stored) ? stored : JSON.parse(localStorage.getItem('cvt-quote') || '[]').map(id => ({ id, quantity:1 }));
-  cart = source.filter(item => products.some(product => product.id === item.id)).map(item => ({ id:item.id, quantity:Math.min(99, Math.max(1, Number.parseInt(item.quantity, 10) || 1)) }));
-} catch { cart = []; }
+let cart = store.readCart();
+let productPriceSequence = 0;
 
 function saveCart() {
-  localStorage.setItem('cvt-cart', JSON.stringify(cart));
+  store.writeCart(cart);
   quoteCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
   renderDrawer();
 }
@@ -38,7 +35,7 @@ function renderProducts() {
   for (const product of visible) {
     const card = document.createElement('article');
     card.className = 'product-card';
-    card.innerHTML = `<div class="product-image"><img src="${product.image}" alt="Imagem ilustrativa de ${product.name.toLocaleLowerCase('pt-BR')}" loading="lazy"><span class="badge">${product.badge}</span><button type="button" class="quickview" data-view="${product.id}">${product.id === 'cartoes' ? 'Personalizar cartão ↗' : 'Ver detalhes ↗'}</button></div><div class="product-body"><div><small>${product.category}</small><h3>${product.name}</h3><p>${product.teaser}</p></div><button type="button" data-add="${product.id}" aria-label="${product.id === 'cartoes' ? 'Personalizar' : 'Adicionar'} ${product.name}${product.id === 'cartoes' ? '' : ' ao carrinho'}">${product.id === 'cartoes' ? '↗' : '+'}</button></div>`;
+    card.innerHTML = `<div class="product-image"><img src="${product.image}" alt="Imagem ilustrativa de ${product.name.toLocaleLowerCase('pt-BR')}" loading="lazy"><span class="badge">${product.badge}</span><button type="button" class="quickview" data-view="${product.id}">Personalizar ↗</button></div><div class="product-body"><div><small>${product.category}</small><h3>${product.name}</h3><p>${product.teaser}</p></div><button type="button" data-add="${product.id}" aria-label="Personalizar ${product.name}">↗</button></div>`;
     card.querySelector('img').loading = 'eager';
     const imageArea = card.querySelector('.product-image');
     imageArea.tabIndex = 0;
@@ -48,24 +45,45 @@ function renderProducts() {
     imageArea.addEventListener('keydown', event => { if (event.target === imageArea && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); showProduct(product.id); } });
     grid.append(card);
   }
-  $('#resultCount').textContent = `${visible.length} ${visible.length === 1 ? 'solução' : 'soluções'}`;
+  $('#resultCount').textContent = `${visible.length} ${visible.length === 1 ? 'produto' : 'produtos'}`;
   $('#emptyState').hidden = visible.length > 0;
 }
 function addProduct(id) {
-  if (id === 'cartoes') { window.location.href = '/cartao-de-visita.html'; return; }
-  const item = cart.find(entry => entry.id === id);
-  if (item) item.quantity = Math.min(99, item.quantity + 1);
-  else cart.push({ id, quantity:1 });
-  saveCart();
-  if (dialog.open) dialog.close();
-  openDrawer();
+  showProduct(id);
 }
-function showProduct(id) {
-  if (id === 'cartoes') { window.location.href = '/cartao-de-visita.html'; return; }
+function showProduct(id, lineId = null) {
+  if (id === 'cartoes') { window.location.href = lineId ? `/cartao-de-visita.html?line=${encodeURIComponent(lineId)}` : '/cartao-de-visita.html'; return; }
   const product = products.find(item => item.id === id);
   if (!product) return;
-  $('#productDetail').innerHTML = `<div class="product-detail"><img src="${product.image}" alt="Imagem ilustrativa de ${product.name.toLocaleLowerCase('pt-BR')}"><div class="detail-copy"><span class="eyebrow">${product.category} / projeto sob medida</span><h2>${product.name}</h2><p>${product.description}</p><ul>${product.options.map(option => `<li>${option}</li>`).join('')}</ul><button class="button button-dark" data-add="${product.id}">Adicionar ao carrinho <span aria-hidden="true">↗</span></button><a class="credit" href="${product.photo}" target="_blank" rel="noopener noreferrer">Foto ilustrativa: ${product.credit} / Pexels ↗</a></div></div>`;
+  const existing = cart.find(item => item.lineId === lineId && item.id === id);
+  $('#productDetail').innerHTML = `<div class="product-detail"><img src="${product.image}" alt="Imagem ilustrativa de ${product.name.toLocaleLowerCase('pt-BR')}"><div class="detail-copy"><span class="eyebrow">${product.category} / personalize seu produto</span><h2>${product.name}</h2><p>${product.description}</p><ul>${product.options.map(option => `<li>${option}</li>`).join('')}</ul><form id="productConfigForm"><div class="checkout-fields two-col">${store.fieldsHtml(product, existing?.configuration, 'product-')}</div><label class="checkout-field"><span>Quantidade</span><input name="quantity" type="number" min="1" max="99" step="1" required value="${existing?.quantity || 1}" inputmode="numeric"></label><p id="productPrice" role="status" aria-live="polite">Complete a personalização para conferir o preço.</p><button type="submit" class="button button-dark">${existing ? 'Salvar personalização' : 'Adicionar ao carrinho'} <span aria-hidden="true">↗</span></button></form><a class="credit" href="${product.photo}" target="_blank" rel="noopener noreferrer">Foto ilustrativa: ${product.credit} / Pexels ↗</a></div></div>`;
+  const form = $('#productConfigForm');
+  async function updatePrice() {
+    const sequence = ++productPriceSequence;
+    const item = { id, quantity:Number(form.elements.quantity.value), configuration:store.readFields(form, product) };
+    $('#productPrice').textContent = 'Conferindo preço…';
+    const quote = await store.price(item);
+    if (sequence === productPriceSequence && form.isConnected) $('#productPrice').textContent = store.priceText(quote);
+  }
+  form.addEventListener('input', event => { event.target.setCustomValidity?.(''); updatePrice(); });
+  form.addEventListener('change', updatePrice);
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const configuration = store.readFields(form, product);
+    if (!store.validConfiguration(id, configuration)) {
+      const invalid = [...form.querySelectorAll('input[type="number"][data-config-field]')].find(input => !Number.isFinite(Number(input.value)) || Number(input.value) <= 0);
+      invalid?.setCustomValidity('Informe uma medida maior que zero.');
+      form.reportValidity();
+      return;
+    }
+    if (!form.reportValidity()) return;
+    cart = store.addConfigured(id, configuration, Number(form.elements.quantity.value), existing?.lineId);
+    saveCart();
+    dialog.close();
+    openDrawer();
+  });
   dialog.showModal();
+  updatePrice();
 }
 function openDrawer() {
   lastFocus = document.activeElement;
@@ -86,32 +104,31 @@ function closeDrawer() {
 function renderDrawer() {
   const target = $('#drawerItems');
   target.replaceChildren();
-  const needsCardConfiguration = cart.some(item => item.id === 'cartoes') && !sessionStorage.getItem('cvt-card-config');
+  const needsConfiguration = cart.some(item => !store.validConfiguration(item.id, item.configuration));
   $('#sendQuote').disabled = cart.length === 0;
-  $('#sendQuote').firstChild.textContent = needsCardConfiguration ? 'Personalizar cartão ' : 'Informar endereço e revisar ';
+  $('#sendQuote').firstChild.textContent = needsConfiguration ? 'Completar personalização ' : 'Continuar compra ';
   if (!cart.length) {
-    target.innerHTML = '<div class="drawer-empty"><span style="font-size:42px;color:var(--orange)">◇</span><h3>Nenhuma solução selecionada</h3><p>Escolha os serviços que seu projeto precisa para preparar o pedido.</p></div>';
+    target.innerHTML = '<div class="drawer-empty"><span style="font-size:42px;color:var(--orange)">◇</span><h3>Seu carrinho está vazio</h3><p>Escolha um produto e personalize para começar.</p></div>';
     return;
   }
   for (const item of cart) {
     const product = products.find(entry => entry.id === item.id);
     const row = document.createElement('div');
     row.className = 'drawer-item';
-    if (product.id === 'cartoes') {
-      let configuration = null;
-      try { configuration = JSON.parse(sessionStorage.getItem('cvt-card-config') || 'null'); } catch { /* configuração será refeita */ }
-      row.innerHTML = `<img src="${product.image}" alt=""><div><strong>${product.name}</strong><small></small><a class="drawer-edit-link" href="/cartao-de-visita.html">${configuration ? 'Editar personalização' : 'Personalizar antes de continuar'} ↗</a></div><button type="button" data-remove="${product.id}" aria-label="Remover ${product.name}">×</button>`;
-      row.querySelector('small').textContent = configuration ? `${configuration.runQuantity || '—'} cartões · valor sob orçamento` : 'Configuração pendente';
-    } else {
-      row.innerHTML = `<img src="${product.image}" alt=""><div><strong>${product.name}</strong><small>Valor sob orçamento</small><div class="drawer-quantity"><button type="button" data-decrease="${product.id}" aria-label="Diminuir ${product.name}">−</button><span>${item.quantity}</span><button type="button" data-increase="${product.id}" aria-label="Aumentar ${product.name}">+</button></div></div><button type="button" data-remove="${product.id}" aria-label="Remover ${product.name}">×</button>`;
-    }
+    row.innerHTML = `<img src="${product.image}" alt=""><div><strong>${product.name}</strong><small class="drawer-configuration"></small><small class="drawer-price" role="status"></small><a class="drawer-edit-link" href="${store.editUrl(item)}">Editar personalização ↗</a><div class="drawer-quantity"><button type="button" data-decrease="${item.lineId}" aria-label="Diminuir ${product.name}">−</button><span>${item.quantity}</span><button type="button" data-increase="${item.lineId}" aria-label="Aumentar ${product.name}">+</button></div></div><button type="button" data-remove="${item.lineId}" aria-label="Remover ${product.name}">×</button>`;
+    row.querySelector('.drawer-configuration').textContent = store.summary(item);
+    if (item.id !== 'cartoes') row.querySelector('.drawer-edit-link').addEventListener('click', event => { event.preventDefault(); closeDrawer(); showProduct(item.id, item.lineId); });
+    row.querySelector('.drawer-price').textContent = 'Conferindo preço…';
+    store.price(item).then(quote => { if (row.isConnected) row.querySelector('.drawer-price').textContent = store.priceText(quote); });
     target.append(row);
   }
 }
 function openCheckout() {
   if (!cart.length) return;
   sessionStorage.setItem('cvt-project-notes', $('#projectNotes').value.trim());
-  window.location.href = cart.some(item => item.id === 'cartoes') && !sessionStorage.getItem('cvt-card-config') ? '/cartao-de-visita.html' : '/checkout.html';
+  const incomplete = cart.find(item => !store.validConfiguration(item.id, item.configuration));
+  if (incomplete && incomplete.id !== 'cartoes') { closeDrawer(); showProduct(incomplete.id, incomplete.lineId); return; }
+  window.location.href = incomplete ? store.editUrl(incomplete) : '/checkout.html';
 }
 function fallbackPhotos() {
   return [
@@ -171,12 +188,12 @@ $('#drawerItems').addEventListener('click', event => {
   const increase = event.target.closest('[data-increase]');
   const decrease = event.target.closest('[data-decrease]');
   if (remove) {
-    cart = cart.filter(item => item.id !== remove.dataset.remove);
-    if (remove.dataset.remove === 'cartoes') sessionStorage.removeItem('cvt-card-config');
+    cart = cart.filter(item => item.lineId !== remove.dataset.remove);
+    if (!cart.some(item => item.id === 'cartoes')) sessionStorage.removeItem('cvt-card-config');
   }
-  else if (increase) cart.find(item => item.id === increase.dataset.increase).quantity = Math.min(99, cart.find(item => item.id === increase.dataset.increase).quantity + 1);
+  else if (increase) cart.find(item => item.lineId === increase.dataset.increase).quantity = Math.min(99, cart.find(item => item.lineId === increase.dataset.increase).quantity + 1);
   else if (decrease) {
-    const item = cart.find(entry => entry.id === decrease.dataset.decrease);
+    const item = cart.find(entry => entry.lineId === decrease.dataset.decrease);
     item.quantity = Math.max(1, item.quantity - 1);
   } else return;
   saveCart();
@@ -205,7 +222,15 @@ document.addEventListener('keydown', event => {
   else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
 });
 $('#year').textContent = new Date().getFullYear();
+$('#projectNotes').value = sessionStorage.getItem('cvt-project-notes') || '';
+$('#projectNotes').addEventListener('input', event => sessionStorage.setItem('cvt-project-notes', event.target.value));
 renderProducts();
 saveCart();
 renderInspiration(fallbackPhotos());
 loadConfigAndPhotos();
+function openProductFromLocation() {
+  const query = new URLSearchParams(window.location.hash.slice(1));
+  if (query.has('produto')) { if (drawer.classList.contains('open')) closeDrawer(); showProduct(query.get('produto'), query.get('line')); }
+}
+window.addEventListener('hashchange', openProductFromLocation);
+openProductFromLocation();
