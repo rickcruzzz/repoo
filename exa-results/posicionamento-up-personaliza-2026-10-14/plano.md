@@ -255,4 +255,3 @@ Validação prevista após a implementação: configurações disponíveis e ind
 Pesquisa e plano concluídos, incluindo o funil solicitado. Os arquivos da loja, preços, banco, credenciais, integrações e campanhas não foram alterados nesta etapa. Não houve compra real, disparo de mensagens ou novo deploy. As recomendações dependem de implementação e das definições comerciais listadas.
 
 O registro de fontes acompanha este plano em fontes.json. A implementação deve aproveitar a aplicação existente.
-
