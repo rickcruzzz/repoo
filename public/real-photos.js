@@ -1,7 +1,7 @@
 /* Referência sem dependências para o carrossel. Carregar após real-media.js. */
 (() => {
   const root = document.querySelector('[data-real-hero]');
-  const slides = window.UP_REAL_MEDIA?.hero;
+  const slides = window.UP_HERO_MEDIA || window.UP_REAL_MEDIA?.hero;
   if (!root || !slides?.length || root.dataset.enhanced) return;
   root.dataset.enhanced = 'true';
   const track = root.querySelector('.real-hero__track');
@@ -31,7 +31,7 @@
     const media = window.matchMedia('(max-width:700px)').matches ? next.mobile : next.desktop;
     const image = new Image();
     image.decoding = 'async';
-    image.sizes = next.portrait ? '(max-width:700px) 70vw, 480px' : '100vw';
+    image.sizes = '100vw';
     image.srcset = media.srcset;
     image.src = media.src;
   };
@@ -74,7 +74,7 @@
   pauseButton?.addEventListener('click', () => {
     manualPaused = !manualPaused;
     pauseButton.setAttribute('aria-pressed', String(manualPaused));
-    pauseButton.setAttribute('aria-label', manualPaused ? 'Retomar apresentação das fotos' : 'Pausar apresentação das fotos');
+    pauseButton.setAttribute('aria-label', manualPaused ? 'Retomar apresentação das imagens' : 'Pausar apresentação das imagens');
     pauseButton.querySelector('path')?.setAttribute('d', manualPaused ? 'M3 1.5 10.5 6 3 10.5Z' : 'M2 1h3v10H2zM7 1h3v10H7z');
     resetTimer();
   });

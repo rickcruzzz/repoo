@@ -1,10 +1,9 @@
 /* Carregar após as folhas atuais. A identidade verde/preto permanece no CSS do site. */
-.hero-banner.real-hero { position:relative; isolation:isolate; overflow:hidden; background:#242423; touch-action:pan-y; }
-.real-hero__track { height:100%; display:flex; transform:translateX(-100%); transition:transform 700ms cubic-bezier(.22,.61,.36,1); }
+.hero-banner.real-hero { position:relative; isolation:isolate; overflow:hidden; height:auto; aspect-ratio:1; background:var(--ink); touch-action:pan-y; }
+.real-hero__track { position:absolute; inset:0; height:100%; display:flex; transform:translateX(-100%); transition:transform 700ms cubic-bezier(.22,.61,.36,1); }
 .real-hero__slide { position:relative; flex:0 0 100%; min-width:0; height:100%; overflow:hidden; isolation:isolate; }
-.hero-banner .real-hero__ambient { position:absolute; inset:-6%; width:112%; height:112%; object-fit:cover; filter:blur(24px) brightness(.53); transform:scale(1.04); pointer-events:none; z-index:-1; }
 .real-hero__slide picture { display:block; position:absolute; inset:0; height:100%; }
-.hero-banner .real-hero__image { width:100%; height:100%; object-fit:contain; object-position:center; }
+.hero-banner .real-hero__image { width:100%; height:100%; object-fit:cover; object-position:center; }
 .real-hero__controls { position:absolute; z-index:3; left:50%; bottom:16px; transform:translateX(-50%); display:flex; align-items:center; gap:3px; padding:0 7px; border-radius:24px; background:#10131068; backdrop-filter:blur(10px); }
 .real-hero__dot,.real-hero__pause { display:grid; place-items:center; border:0; color:#fff; background:transparent; padding:0; height:40px; cursor:pointer; }
 .real-hero__dot { width:35px; }
@@ -29,6 +28,9 @@
 .real-gallery-card picture { display:block; height:100%; }
 .real-gallery-card img { height:100%; width:100%; object-fit:cover; }
 .real-gallery-card figcaption { position:absolute; inset:auto 0 0; color:#fff; font-size:11px; font-weight:600; padding:38px 14px 14px; background:linear-gradient(transparent,#111b); }
+@media(min-width:701px) {
+  .hero-banner.real-hero { aspect-ratio:12 / 5; }
+}
 @media(max-width:700px) {
   .hero-banner .real-hero__image[data-mobile-fit="cover"] { object-fit:cover; }
   .section-categories .category-grid { grid-template-columns:1fr; gap:16px; }
